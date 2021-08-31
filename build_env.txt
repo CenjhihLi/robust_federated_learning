@@ -1,0 +1,10 @@
+conda create --name federated python=3.8
+conda install cudatoolkit=10.1
+conda install cudnn=7.6
+
+conda install matplotlib~=3.4.0
+conda install tensorflow=2.3
+
+pip install wquantiles=0.6
+pip install nest_asyncio
+pip install tensorflow-federated=0.17.0
