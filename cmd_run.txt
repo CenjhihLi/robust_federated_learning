@@ -1,0 +1,3 @@
+cd "C:\GitHub\robust_federated_learning"
+conda activate federated
+python run_experiment.py
