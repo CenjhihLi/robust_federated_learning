@@ -3,7 +3,7 @@ import random
 import numpy as np
 import tensorflow as tf
 
-from experiments.mnist.partition_v2 import Partition, PartitionParams
+from prepare_data.partition_v2 import Partition, PartitionParams
 
 
 def load(partition_config, input_shape):

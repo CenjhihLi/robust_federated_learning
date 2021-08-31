@@ -1,3 +1,7 @@
 # Ignoring directories
 # This is the experiments results
 experiments/
+
+# Ignoring file
+CNN_attackers_10%.pdf
+MLP_attackers_10%.pdf
