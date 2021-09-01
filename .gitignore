@@ -1,7 +1,8 @@
 # Ignoring directories
 # This is the experiments results
 experiments/
-
+.ipynb_checkpoints/
 # Ignoring file
 CNN_attackers_10%.pdf
 MLP_attackers_10%.pdf
+run_experiment_0.py
