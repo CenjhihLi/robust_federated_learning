@@ -25,6 +25,7 @@ def plot_range(experiments, ax, plot_start, plot_end, metric_idx=1, ylim=None):
             
         if Path(f'{path}.npz').is_file():
             history = np.load(f'{path}.npz')['history']
+            print ("final accuracy is {}".format(history[min(len(history), plot_end)-1][1]))
 
             ax.plot(range(plot_start, min(len(history), plot_end)),
                     history[plot_start:min(len(history), plot_end), metric_idx], label=label, #alpha=alpha, #color=color,# marker=marker,
