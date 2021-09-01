@@ -4,7 +4,7 @@ reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine
 we using the experiments code and apply our gamma mean as an aggregator
 
 Author: Cen-Jhih Li
-Belongs: Academic Senica, Institute of statistic, Robust federated learning project
+Belongs: Academia Sinica, Institute of Statistical Science, Robust federated learning project
 """
 
 import itertools
@@ -89,12 +89,14 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         server_weights = prev_results['server_weights'].tolist()
         server.model.set_weights(server_weights)
         history = prev_results['history'].tolist()
+        history_delta_sum = prev_results['history_delta_sum'].tolist()
         start_round = len(history)
         if start_round >= num_of_rounds:
             print(f'skipping {expr_basename} (seed={seed}) '
                   f'start_round({start_round}), num_of_rounds({num_of_rounds})')
             return
     else:
+        history_delta_sum = []
         history = []
         start_round = 0
 
@@ -125,8 +127,8 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         for client in attackers:
             client.as_attacker(threat_model)
 
-    server.train(clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history,
-                 lambda history, server_weights: np.savez(expr_file, history=history, server_weights=server_weights))
+    server.train(clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
+                 lambda history, server_weights, history_delta_sum: np.savez(expr_file, history=history, server_weights=server_weights, history_delta_sum=history_delta_sum))
 
 
 def passthrough_preprocess(_): return _

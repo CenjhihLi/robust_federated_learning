@@ -1,9 +1,10 @@
 """
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
-functions: mean, coordinatewise, quantile, median, trimmed_mean_1d, trimmed_mean
+functions: mean, coordinatewise, quantile, median, trimmed_mean_1d, trimmed_mean(line78)
+we write our trimmed_mean since the original one is too slow
 
 Author: Cen-Jhih Li
-Belongs: Academic Senica, Institute of statistic, Robust federated learning project
+Belongs: Academia Sinica, Institute of Statistical Science, Robust federated learning project
 """
 
 import numpy as np
@@ -169,17 +170,17 @@ def ext_remove(points, weights=None, beta=0.1):
     return new_points, new_weights
 
 
-def gamma_mean_1D(points, weights=None, gamma = 0.1, max_iter=10, tol = 1e-7, remove=False, beta=0.1):
+def gamma_mean_1D(points, weights=None, history_points=None, gamma = 0.1, max_iter=10, tol = 1e-7, remove=False, beta=0.1):
     """
     We use element-wise mu & sigma,
     gamma_mean
     """
-    if weights is None:
-        mu_hat = mean(points, None)
-        sigma_hat = std(points, None)
-    else:
+    if history_points is None:
         mu_hat = mean(points, weights)
         sigma_hat = std(points, weights)
+    else:
+        mu_hat = mean(points, weights)
+        sigma_hat = std(history_points, weights)
     #sigma_hat = np.diag(np.cov(np.transpose(points)))
     
     """
@@ -205,9 +206,15 @@ def gamma_mean_1D(points, weights=None, gamma = 0.1, max_iter=10, tol = 1e-7, re
         return mu_hat
     
     for _ in range(max_iter):
-        d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
-            np.divide(np.subtract(d[index], mu_hat[index]), sigma_hat[index]))) )
-            for d in points]
+        if history_points is None:
+            d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
+                np.reshape(np.divide(np.subtract(d[index], mu_hat[index]), sigma_hat[index], [-1]))) ))
+                for d in points]
+        else:
+            d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
+                np.reshape(np.divide(np.subtract(d[index], mu_hat[index]), sigma_hat[index], [-1]))) ))
+                for d in history_points]
+        
         if np.all(np.array(d_gamma)==0):
             return mu_hat
         
@@ -228,16 +235,16 @@ def gamma_mean_1D(points, weights=None, gamma = 0.1, max_iter=10, tol = 1e-7, re
     return mu_hat#.astype(points.dtype)
 
 
-def simple_gamma_mean(points, weights=None, gamma = 0.1, max_iter=10, tol = 1e-7, remove=False, beta=0.1):
+def simple_gamma_mean(points, weights=None, history_points=None, gamma = 0.1, max_iter=10, tol = 1e-7, remove=False, beta=0.1):
     """
     Do not consider cov inverse
     """
-    if weights is None:
-        mu_hat = mean(points, None)
-        sigma_hat = std(points, None)
-    else:
+    if history_points is None:
         mu_hat = mean(points, weights)
         sigma_hat = std(points, weights)
+    else:
+        mu_hat = mean(points, weights)
+        sigma_hat = std(history_points, weights)
     #sigma_hat = np.diag(np.cov(np.transpose(points)))
     
     """
@@ -263,9 +270,14 @@ def simple_gamma_mean(points, weights=None, gamma = 0.1, max_iter=10, tol = 1e-7
         return mu_hat
     
     for _ in range(max_iter):
-        d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
-            np.subtract(d[index], mu_hat[index]))) )
-            for d in points]
+        if history_points is None:
+            d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
+                np.reshape(np.subtract(d[index], mu_hat[index]),[-1])) ))
+                for d in points]
+        else:
+            d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
+                np.reshape(np.subtract(d[index], mu_hat[index]),[-1])) ))
+                for d in history_points]
         if np.all(np.array(d_gamma)==0):
             return mu_hat
         if weights is None:
@@ -314,7 +326,7 @@ def dim_reduce(points, weights, method, dim = None):
         return
 
 
-def gamma_mean_2D(points, weights=None, gamma = 0.1, max_iter=10, tol = 1e-7, dim_red=False, red_method='pca'):
+def gamma_mean_2D(points, weights=None, history_points=None, gamma = 0.1, max_iter=10, tol = 1e-7, dim_red=False, red_method='pca'):
     """
     We use element-wise mu & sigma,
     gamma_mean
@@ -322,12 +334,13 @@ def gamma_mean_2D(points, weights=None, gamma = 0.1, max_iter=10, tol = 1e-7, di
     original_tol=tol
     shape = np.shape(points[0])
     points = [np.asarray(p).reshape([-1]) for p in points]
-    if weights is None:
-        mu_hat = mean(points, None)
-        sigma_hat = cov(points, None)
-    else:
+    history_points = [np.asarray(p).reshape([-1]) for p in history_points]
+    if history_points is None:
         mu_hat = mean(points, weights)
         sigma_hat = cov(points, weights)
+    else:
+        mu_hat = mean(points, weights)
+        sigma_hat = cov(history_points, weights)
     
     """
     cov allow weights have some 0s
@@ -361,11 +374,18 @@ def gamma_mean_2D(points, weights=None, gamma = 0.1, max_iter=10, tol = 1e-7, di
     some columns=0, inverse does not exist 
     """
     for _ in range(max_iter):
-        d_gamma=[np.exp(-(gamma/2) * 
-                        np.dot(np.dot(np.subtract(d, mu_hat),
-                                      np.linalg.inv(sigma_hat)),
-                               np.transpose(np.subtract(d, mu_hat))))
-            for d in points]
+        if history_points is None:
+            d_gamma=[np.exp(-(gamma/2) * 
+                np.dot(np.dot(np.subtract(d, mu_hat),
+                    np.linalg.inv(sigma_hat)),
+                    np.transpose(np.subtract(d, mu_hat))))
+                for d in points]
+        else:
+            d_gamma=[np.exp(-(gamma/2) * 
+                np.dot(np.dot(np.subtract(d, mu_hat),
+                    np.linalg.inv(sigma_hat)),
+                    np.transpose(np.subtract(d, mu_hat))))
+                for d in history_points]
         if np.all(np.array(d_gamma)==0):
             if dim_red:
                 """
@@ -395,18 +415,18 @@ def gamma_mean_2D(points, weights=None, gamma = 0.1, max_iter=10, tol = 1e-7, di
         mu_hat = np.dot(mu_hat, inverse_transeform_map)
     return mu_hat.reshape(shape)#.astype(points.dtype)
 
-def gamma_mean(points, weights=None, compute = "1D", gamma = 0.1, max_iter=10, 
+def gamma_mean(points, weights=None, history_points=None, compute = "1D", gamma = 0.1, max_iter=10, 
                tol = 1e-7, remove=False, beta=0.1, dim_red=False, red_method='pca'):
     if compute=="1D":
-        return gamma_mean_1D(points=points, weights=weights, 
+        return gamma_mean_1D(points=points, weights=weights, history_points=None, 
                              gamma = gamma, max_iter = max_iter, 
                              tol = tol, remove=remove, beta=beta)
     elif compute=="simple":
-        return simple_gamma_mean(points=points, weights=weights, 
+        return simple_gamma_mean(points=points, weights=weights, history_points=None, 
                                  gamma = gamma, max_iter = max_iter, 
                                  tol = tol, remove=remove, beta=beta)
     elif compute=="2D":
-        return gamma_mean_2D(points=points, weights=weights, 
+        return gamma_mean_2D(points=points, weights=weights, history_points=None, 
                              gamma = gamma, max_iter = max_iter, 
                              tol = tol, dim_red=dim_red, red_method=red_method)
 
