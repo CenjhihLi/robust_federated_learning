@@ -1,7 +1,6 @@
 import numpy as np
 import tensorflow as tf
 
-
 class Server:
   def __init__(self, model_factory, clients_importance_preprocess, weight_delta_aggregator, clients_per_round):
     self._clients_importance_preprocess = clients_importance_preprocess
@@ -15,7 +14,7 @@ class Server:
       metrics=['accuracy']
     )
 
-  def train(self, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, progress_callback):
+  def train(self, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, progress_callback):
     client2importance = self._clients_importance_preprocess([c.num_of_samples for c in clients])
 
     server_weights = self.model.get_weights()
@@ -40,16 +39,25 @@ class Server:
         importance_weights = [client2importance[c.idx] for c in selected_clients]
       else:
         importance_weights = None
-
-      # todo change code below (to be nicer?):
-      # aggregated_deltas = [self._weight_delta_aggregator(_, importance_weights) for _ in zip(*deltas)]
-      # server_weights = [w + d for w, d in zip(server_weights, aggregated_deltas)]
-      server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], importance_weights)
+        
+      if r==0:
+        history_delta_sum = deltas
+      else:
+        history_delta_sum = [np.add(h, d) for h, d in zip(history_delta_sum, deltas)]
+      if 'gamma_mean' in self._weight_delta_aggregator.__name__:
+        server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])
                         for i, w in enumerate(server_weights)]
+      else:
+        # todo change code below (to be nicer?):
+        # aggregated_deltas = [self._weight_delta_aggregator(_, importance_weights) for _ in zip(*deltas)]
+        # server_weights = [w + d for w, d in zip(server_weights, aggregated_deltas)]
+        server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], importance_weights)
+                          for i, w in enumerate(server_weights)]
+      
 
       self.model.set_weights(server_weights)
       loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
       print(f'{expr_basename} loss: {loss} - accuracy: {acc:.2%}')
       history.append((loss, acc))
       if (r + 1) % 10 == 0:
-        progress_callback(history, server_weights)
+        progress_callback(history, server_weights, history_delta_sum)
