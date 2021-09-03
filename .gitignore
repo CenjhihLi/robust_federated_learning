@@ -2,7 +2,11 @@
 # This is the experiments results
 experiments/
 .ipynb_checkpoints/
+__pycache__/
 # Ignoring file
 CNN_attackers_10%.pdf
 MLP_attackers_10%.pdf
 run_experiment_0.py
+test_seed.py
+test.py
+print_test.py
