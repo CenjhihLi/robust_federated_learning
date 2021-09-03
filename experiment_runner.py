@@ -90,6 +90,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         server.model.set_weights(server_weights)
         history = prev_results['history'].tolist()
         history_delta_sum = prev_results['history_delta_sum'].tolist()
+        #last_deltas = prev_results['last_deltas'].tolist()
         start_round = len(history)
         if start_round >= num_of_rounds:
             print(f'skipping {expr_basename} (seed={seed}) '
@@ -98,6 +99,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     else:
         history_delta_sum = []
         history = []
+        #last_deltas = []
         start_round = 0
 
     np.random.seed(seed)
@@ -126,9 +128,12 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         print(attackers)
         for client in attackers:
             client.as_attacker(threat_model)
-
-    server.train(clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
-                 lambda history, server_weights, history_delta_sum: np.savez(expr_file, history=history, server_weights=server_weights, history_delta_sum=history_delta_sum))
+    server.train(seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
+                 lambda history, server_weights, history_delta_sum: np.savez(expr_file, history=history, 
+                    server_weights=server_weights, history_delta_sum=history_delta_sum))
+    #server.train(seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, last_deltas,
+    #             lambda history, server_weights, history_delta_sum, last_deltas: np.savez(expr_file, history=history, 
+    #                server_weights=server_weights, history_delta_sum=history_delta_sum, last_deltas = last_deltas))
 
 
 def passthrough_preprocess(_): return _
