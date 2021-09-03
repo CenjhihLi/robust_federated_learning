@@ -208,11 +208,11 @@ def gamma_mean_1D(points, weights=None, history_points=None, gamma = 0.1, max_it
     for _ in range(max_iter):
         if history_points is None:
             d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
-                np.reshape(np.divide(np.subtract(d[index], mu_hat[index]), sigma_hat[index], [-1]))) ))
+                np.reshape(np.divide(np.subtract(d[index], mu_hat[index]), sigma_hat[index]), [-1])) ))
                 for d in points]
         else:
             d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
-                np.reshape(np.divide(np.subtract(d[index], mu_hat[index]), sigma_hat[index], [-1]))) ))
+                np.reshape(np.divide(np.subtract(d[index], mu_hat[index]), sigma_hat[index]), [-1])) ))
                 for d in history_points]
         
         if np.all(np.array(d_gamma)==0):

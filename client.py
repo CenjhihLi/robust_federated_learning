@@ -1,10 +1,7 @@
 """
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 
-we using the experiments code and apply our gamma mean as an aggregator
-
-Author: Cen-Jhih Li
-Belongs: Academia Sinica, Institute of Statistical Science, Robust federated learning project
+add random attack
 """
 
 import numpy as np
@@ -32,16 +29,16 @@ class Client():
 
     self.num_of_samples = self.threat_model.num_samples_per_attacker
 
-  def train(self, server_weights):
+  def train(self, server_weights, lr_decayed):
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'delta_to_zero':
       return [-_ for _ in server_weights]
       
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'random':
       return [np.random.normal(size = _.shape) for _ in server_weights]
-  
+    #Since local machine do not have last update v and only iterate once, Adam = Sgd here
     self._model.compile(
-      optimizer=tf.keras.optimizers.SGD(learning_rate=5e-2),
-      loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+      optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ),
+      loss = tf.keras.losses.SparseCategoricalCrossentropy(),
     )
 
     self._model.set_weights(server_weights)
