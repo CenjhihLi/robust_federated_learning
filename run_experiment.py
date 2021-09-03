@@ -2,7 +2,13 @@
 #sys.path.append("C:/GitHub\robust_federated_learning")
 import tensorflow.keras as keras
 import experiment_runner as experiment_runner
-
+import numpy as np
+import tensorflow as tf
+import random
+seed=1
+np.random.seed(seed)
+tf.random.set_seed(seed)
+random.seed(seed)
 """
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 
@@ -40,26 +46,26 @@ def cnn_model_factory():
 
 experiment_runner.run_all('expr_no_attacks',
                           mlp_model_factory, input_shape=[-1], dataset='mnist',
-                          seed=1, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0,
+                          seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0,
                           t_mean_beta=0.1, clients=clients,
                           gam_max=10, gamma=0.05, geo_max=1000, tol = 1e-7)
 
 experiment_runner.run_all('expr_random',
                           mlp_model_factory, input_shape=[-1], dataset='mnist', 
-                          seed=1, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0.1,
+                          seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0.1,
                           num_samples_per_attacker=1_000_000, 
                           attack_type='random', t_mean_beta=0.1, clients=clients,
                           gam_max=10, gamma=0.05, geo_max=1000, tol = 1e-7)
 
 experiment_runner.run_all('cnn_expr_no_attacks',
                           model_factory = cnn_model_factory, input_shape=[28,28,1], dataset='mnist',
-                          seed=1, cpr='all', rounds=1000, mu=1.5, sigma=3.45, 
+                          seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, 
                           real_alpha=0, t_mean_beta=0.1, clients=clients,
                           gam_max=10, gamma=0.05, geo_max=1000, tol = 1e-7)
 
 experiment_runner.run_all('cnn_expr_random', 
                           model_factory = cnn_model_factory, input_shape=[28,28,1], dataset='mnist',
-                          seed=1, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0.1,
+                          seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0.1,
                           num_samples_per_attacker=1_000_000, 
                           attack_type='random', t_mean_beta=0.1, clients=clients,
                           gam_max=10, gamma=0.05, geo_max=1000, tol = 1e-7)
