@@ -2,9 +2,6 @@
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 
 we using the experiments code and apply our gamma mean as an aggregator
-
-Author: Cen-Jhih Li
-Belongs: Academia Sinica, Institute of Statistical Science, Robust federated learning project
 """
 
 import itertools

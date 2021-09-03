@@ -18,7 +18,10 @@ class Server:
   def train(self, seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, #last_deltas,
             progress_callback):
     client2importance = self._clients_importance_preprocess([c.num_of_samples for c in clients])
+    if start_round>1:
+      old_loss = history[-1][0]
 
+    loss_descent = True
     server_weights = self.model.get_weights()
 
     def clip_value(gradient, clip_norm=1):
@@ -35,16 +38,19 @@ class Server:
       selected_clients = clients if self._clients_per_round == 'all' \
         else np.random.choice(clients, self._clients_per_round, replace=False)
       
-      np.random.seed(seed+r)
-      tf.random.set_seed(seed+r)
-      random.seed(seed+r)
+      np.random.seed(seed+r+1)
+      tf.random.set_seed(seed+r+1)
+      random.seed(seed+r+1)
 
       def decayed_learning_rate(initial_learning_rate, step, decay_steps = 1000, alpha = 0):
         step = min(step, decay_steps)
         cosine_decay = 0.5 * (1 + np.cos( np.pi * step / decay_steps))
         decayed = (1 - alpha) * cosine_decay + alpha
         return initial_learning_rate * decayed
-      lr_decayed = decayed_learning_rate ( initial_learning_rate = 5e-2, step = r + 1)
+      if loss_descent or r<100:
+        lr_decayed = decayed_learning_rate ( initial_learning_rate = 5e-2, step = r + 1)
+      else:
+        lr_decayed = lr_decayed/2
 
       def Adam(lm, lv, d, lr_decayed, beta_1 = 0.9, beta_2 = 0.999, epsilon = 1e-7):
         g = np.multiply( lr_decayed, d)
@@ -96,10 +102,13 @@ class Server:
       """
       for i, w in enumerate(server_weights):
         if 'gamma_mean' in self._weight_delta_aggregator.__name__:
-          aggr_delta = clip_value(self._weight_delta_aggregator([d[i] for d in deltas], 
-                        importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum]), lr_decayed)
+          #aggr_delta = clip_value(self._weight_delta_aggregator([d[i] for d in deltas], 
+          #              importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum]), lr_decayed)
+          aggr_delta = self._weight_delta_aggregator([d[i] for d in deltas], 
+                        importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])
         else:
-          aggr_delta = clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights), lr_decayed)
+          #aggr_delta = clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights), lr_decayed)
+          aggr_delta = self._weight_delta_aggregator([d[i] for d in deltas], importance_weights)
         if r > 0:
           last_m[i], last_v[i], aggr_delta = Adam(last_m[i], last_v[i], aggr_delta, lr_decayed)
         else: 
@@ -110,22 +119,36 @@ class Server:
         server_weights[i] = w + aggr_delta
       last_deltas = [last_m, last_v]
       """
+      old_server_weights = server_weights
       if 'gamma_mean' in self._weight_delta_aggregator.__name__:
-        server_weights = [w + clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum]), lr_decayed)
+        server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])
                         for i, w in enumerate(server_weights)]
+        #server_weights = [w + clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum]), lr_decayed)
+        #                for i, w in enumerate(server_weights)]
         #server_weights = [w + np.multiply(lr_decayed, clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])))
         #                for i, w in enumerate(server_weights)]
       else:
         # todo change code below (to be nicer?):
         # aggregated_deltas = [self._weight_delta_aggregator(_, importance_weights) for _ in zip(*deltas)]
         # server_weights = [w + d for w, d in zip(server_weights, aggregated_deltas)]
-        server_weights = [w + clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights), lr_decayed)
+        server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], importance_weights)
                           for i, w in enumerate(server_weights)]
+        #server_weights = [w + clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights), lr_decayed)
+        #                  for i, w in enumerate(server_weights)]
         #server_weights = [w + np.multiply(lr_decayed, clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights)))
         #                  for i, w in enumerate(server_weights)]
       
       self.model.set_weights(server_weights)
       loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
+      if r>0:
+        if loss>old_loss:
+          self.model.set_weights(old_server_weights)
+          loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
+          loss_descent=False
+        else:
+          loss_descent=True
+      old_loss = loss
+      
       print(f'{expr_basename} loss: {loss} - accuracy: {acc:.2%}')
       history.append((loss, acc))
       if (r + 1) % 10 == 0:

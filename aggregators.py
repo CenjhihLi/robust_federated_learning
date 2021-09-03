@@ -430,7 +430,6 @@ def gamma_mean(points, weights=None, history_points=None, compute = "1D", gamma 
                              gamma = gamma, max_iter = max_iter, 
                              tol = tol, dim_red=dim_red, red_method=red_method)
 
-
 def geometric_median(points, weights=None, max_iter = 1000, tol = 1e-7):
     """
     Use Weiszfeld's method
