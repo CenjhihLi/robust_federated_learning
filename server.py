@@ -143,6 +143,7 @@ class Server:
       if r>0:
         if loss>old_loss:
           self.model.set_weights(old_server_weights)
+          server_weights = old_server_weights
           loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
           loss_descent=False
         else:
