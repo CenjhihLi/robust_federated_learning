@@ -169,6 +169,12 @@ def run_all(experiment, model_factory, input_shape,
     t_mean = partial(trimmed_mean, beta=t_mean_beta)
     t_mean.__name__ = f't_mean_{int(t_mean_beta * 100)}'
     
+    r_gam_mean_s = partial(gamma_mean, gamma = gamma, max_iter=gam_max, tol = tol, compute='simple')
+    r_gam_mean_s.__name__ = 'simple_record_gamma_mean_{}'.format(str(gamma).replace(".","_"))
+  
+    r_gam_mean = partial(gamma_mean, gamma = gamma, max_iter=gam_max, tol = tol)
+    r_gam_mean.__name__ = 'record_gamma_mean_{}'.format(str(gamma).replace(".","_"))
+
     gam_mean_s = partial(gamma_mean, gamma = gamma, max_iter=gam_max, tol = tol, compute='simple')
     gam_mean_s.__name__ = 'simple_gamma_mean_{}'.format(str(gamma).replace(".","_"))
   
@@ -178,7 +184,7 @@ def run_all(experiment, model_factory, input_shape,
     geo_mean = partial(geometric_median, max_iter = geo_max, tol = tol)
     geo_mean.__name__ = 'geometric_median'
   
-    weight_delta_aggregators = [gam_mean_s, gam_mean, geo_mean, t_mean, median, median, mean]
+    weight_delta_aggregators = [r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean, t_mean, median, median, mean]
     preprocessors = [ignore_weights_preprocess]
     
     threat_models = [None] if (attack_type is None or real_alpha==0) else [
