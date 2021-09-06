@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 import random
-
+import gc
 class Server:
   def __init__(self, model_factory, clients_importance_preprocess, weight_delta_aggregator, clients_per_round):
     self._clients_importance_preprocess = clients_importance_preprocess
@@ -47,10 +47,10 @@ class Server:
         cosine_decay = 0.5 * (1 + np.cos( np.pi * step / decay_steps))
         decayed = (1 - alpha) * cosine_decay + alpha
         return initial_learning_rate * decayed
-      if loss_descent or r<100:
+      if loss_descent or r<np.maximum(num_of_rounds*0.1, 100):
         lr_decayed = decayed_learning_rate ( initial_learning_rate = 5e-2, step = r + 1)
       else:
-        lr_decayed = lr_decayed/2
+        lr_decayed = 0.9*lr_decayed
 
       def Adam(lm, lv, d, lr_decayed, beta_1 = 0.9, beta_2 = 0.999, epsilon = 1e-7):
         g = np.multiply( lr_decayed, d)
@@ -120,7 +120,7 @@ class Server:
       last_deltas = [last_m, last_v]
       """
       old_server_weights = server_weights
-      if 'gamma_mean' in self._weight_delta_aggregator.__name__:
+      if 'record_gamma_mean_' in self._weight_delta_aggregator.__name__:
         server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])
                         for i, w in enumerate(server_weights)]
         #server_weights = [w + clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum]), lr_decayed)
@@ -140,8 +140,8 @@ class Server:
       
       self.model.set_weights(server_weights)
       loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
-      if r>0:
-        if loss>old_loss:
+      if r>=np.maximum(num_of_rounds*0.1, 100):
+        if loss > 1.01*old_loss:
           self.model.set_weights(old_server_weights)
           server_weights = old_server_weights
           loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
@@ -154,3 +154,4 @@ class Server:
       history.append((loss, acc))
       if (r + 1) % 10 == 0:
         progress_callback(history, server_weights, history_delta_sum)#, last_deltas)
+      gc.collect()
