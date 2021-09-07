@@ -47,7 +47,7 @@ class Server:
         cosine_decay = 0.5 * (1 + np.cos( np.pi * step / decay_steps))
         decayed = (1 - alpha) * cosine_decay + alpha
         return initial_learning_rate * decayed
-      if loss_descent or r<np.maximum(num_of_rounds*0.1, 100):
+      if loss_descent or r<np.maximum(num_of_rounds*0.5, 500):
         lr_decayed = decayed_learning_rate ( initial_learning_rate = 5e-2, step = r + 1)
       else:
         lr_decayed = 0.9*lr_decayed
@@ -140,7 +140,7 @@ class Server:
       
       self.model.set_weights(server_weights)
       loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
-      if r>=np.maximum(num_of_rounds*0.1, 100):
+      if r>=np.maximum(num_of_rounds*0.5, 500):
         if loss > 1.01*old_loss:
           self.model.set_weights(old_server_weights)
           server_weights = old_server_weights
