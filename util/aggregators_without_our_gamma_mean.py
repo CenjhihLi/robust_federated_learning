@@ -1,7 +1,7 @@
 """
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 functions: mean, coordinatewise, quantile, median, trimmed_mean_1d, trimmed_mean(line78)
-we write our trimmed_mean since the original one is too slow
+we write our trimmed_mean since the original one is  a bit too slow
 
 Author: Cen-Jhih Li
 Belongs: Academia Sinica, Institute of Statistical Science, Robust federated learning project
@@ -50,7 +50,6 @@ def cov(points, weights):
 Too slow in parameter for loop
 """
 
-
 def coordinatewise(fn, points, weights):
     if len(points) == 1:
         return fn(points, weights)
@@ -59,13 +58,11 @@ def coordinatewise(fn, points, weights):
     return np.transpose(list(map(lambda x: fn(x, weights), points))).reshape(shape)
     #return np.transpose([fn(v, weights) for v in points]).reshape(shape)
 
-
 # reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 def quantile(points, weights = None, quantile = 0.5):
     if weights is None:
         return np.quantile(points, quantile, axis=0).astype(np.float32)
     return coordinatewise(partial(w.quantile_1D, quantile=quantile), points, weights)
-
 
 # reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 def median(points, weights = None):
@@ -132,12 +129,9 @@ def trimmed_mean(points, weights=None, beta = 0.1):
     #shape(m, (p[index])) * (m, (p[index])).sum (p[index]) / (m , (p[index])) . sum (p[index])
   return mu.reshape(shape)
 
-
-
 """
 winsorized mean: not truncate but give lower_bound, upper_bound
 """ 
-
 
 def ext_remove(points, weights=None, beta=0.1):
     """
@@ -172,120 +166,14 @@ def ext_remove(points, weights=None, beta=0.1):
 
 def gamma_mean_1D(points, weights=None, history_points=None, gamma = 0.1, max_iter=10, tol = 1e-7, remove=False, beta=0.1):
     """
-    We use element-wise mu & sigma,
+    We use element-wise mu & sigma, (diagnal cov)
     gamma_mean
     """
-    if history_points is None:
-        mu_hat = mean(points, weights)
-        sigma_hat = std(points, weights)
-    else:
-        mu_hat = mean(points, weights)
-        sigma_hat = std(history_points, weights)
-    #sigma_hat = np.diag(np.cov(np.transpose(points)))
-    
-    """
-    tol should consider the scale of points
-    
-    @Todo: How to set a good tol?
-    Even though we use  np.multiply(np.abs(mu_hat), tol) 
-        and the computation do not consider the element 
-        that sigma_hat <= tol, 
-    ZeroDivisionError still happen rarely when updating mu_hat and sigma_hat
-    However, setting a fix number is not a good idea
-    """
-    tol = np.where(np.abs(mu_hat)>0, np.multiply(np.abs(mu_hat), tol), tol )
-
-    if remove:
-        """
-        remove the extreme points
-        """
-        points, weights = ext_remove(points, weights, beta=beta)
-    #the similar entries do not need to update
-    index = (sigma_hat > tol)       
-    if np.sum(index,axis=None)==0:
-        return mu_hat
-    
-    for _ in range(max_iter):
-        if history_points is None:
-            d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
-                np.reshape(np.divide(np.subtract(d[index], mu_hat[index]), sigma_hat[index]), [-1])) ))
-                for d in points]
-        else:
-            d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
-                np.reshape(np.divide(np.subtract(d[index], mu_hat[index]), sigma_hat[index]), [-1])) ))
-                for d in history_points]
-        
-        if np.all(np.array(d_gamma)==0):
-            return mu_hat
-        
-        if weights is None:
-            mu_hat[index] = mean(points, d_gamma )[index]
-            sigma_hat[index] = np.sqrt((1+gamma)*mean(np.square(np.subtract(points,mu_hat)), 
-                                               d_gamma ))[index]
-        else:
-            mu_hat[index] = mean(points, weights=np.multiply(d_gamma,weights) )[index]
-            sigma_hat[index] = np.sqrt((1+gamma)*mean(np.square(np.subtract(points,mu_hat)), 
-                                               np.multiply(d_gamma,weights) ))[index]
-        index = (sigma_hat > tol)
-        if np.sum(index,axis=None)==0:
-            return mu_hat
-        #if remove:
-        #    #remove the extreme points
-        #    points, weights = ext_remove(points, weights, beta=beta)
-    return mu_hat#.astype(points.dtype)
-
 
 def simple_gamma_mean(points, weights=None, history_points=None, gamma = 0.1, max_iter=10, tol = 1e-7, remove=False, beta=0.1):
     """
-    Do not consider cov inverse
+    Do not consider cov inverse in distance compute (identity cov)
     """
-    if history_points is None:
-        mu_hat = mean(points, weights)
-        sigma_hat = std(points, weights)
-    else:
-        mu_hat = mean(points, weights)
-        sigma_hat = std(history_points, weights)
-    #sigma_hat = np.diag(np.cov(np.transpose(points)))
-    
-    """
-    tol should consider the scale of points
-    
-    @Todo: How to set a good tol?
-    Even though we use  np.multiply(np.abs(mu_hat), tol) 
-        and the computation do not consider the element 
-        that sigma_hat <= tol, 
-    ZeroDivisionError still happen rarely when updating mu_hat and sigma_hat
-    However, setting a fix number is not a good idea
-    """
-    tol = np.where(np.abs(mu_hat)>0, np.multiply(np.abs(mu_hat), tol), tol )
-
-    if remove:
-        """
-        remove the extreme points
-        """
-        points, weights = ext_remove(points, weights, beta=beta)
-    #the similar entries do not need to update
-    index = (sigma_hat > tol)       
-    if np.sum(index,axis=None)==0:
-        return mu_hat
-    
-    for _ in range(max_iter):
-        if history_points is None:
-            d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
-                np.reshape(np.subtract(d[index], mu_hat[index]),[-1])) ))
-                for d in points]
-        else:
-            d_gamma=[np.exp(-(gamma/2) * np.square(np.linalg.norm(
-                np.reshape(np.subtract(d[index], mu_hat[index]),[-1])) ))
-                for d in history_points]
-        if np.all(np.array(d_gamma)==0):
-            return mu_hat
-        if weights is None:
-            mu_hat[index] = mean(points, d_gamma )[index]
-        else:
-            mu_hat[index] = mean(points, weights=np.multiply(d_gamma,weights) )[index]
-    return mu_hat#.astype(points.dtype)
-
 
 def dim_reduce(points, weights, method, dim = None):
     """
@@ -306,114 +194,18 @@ def dim_reduce(points, weights, method, dim = None):
     lowdim_data = np.dot(points, transform_map)
     approx_estimate = np.dot(lowdim_data, inverse_transeform_map)
     """
-    points = [np.asarray(p).reshape([-1]) for p in points]
-    if method=='pca':
-        _, sigma, v = svd(cov(points, weights))
-        expla_var = np.divide(np.cumsum(sigma),np.maximum(np.sum(sigma),1e-5))
-        thred = 0.95
-        if dim is None:
-            dim = np.sum(expla_var<=thred)+1
-        else:
-            dim = np.minimum(np.sum(expla_var<=thred)+1,dim)
-        return np.transpose(v[:dim,:]), np.array(v[:dim,:])
-    elif method=='truncated_svd':
-        return
-    elif method=='kernal_pca':  
-        return
-    elif method=='sparse_pca':
-        return
-    elif method=='incremental_pca':
-        return
-
 
 def gamma_mean_2D(points, weights=None, history_points=None, gamma = 0.1, max_iter=10, tol = 1e-7, dim_red=False, red_method='pca'):
     """
-    We use element-wise mu & sigma,
+    We use mu & sigma matrix,
     gamma_mean
     """
-    original_tol=tol
-    shape = np.shape(points[0])
-    points = [np.asarray(p).reshape([-1]) for p in points]
-    history_points = [np.asarray(p).reshape([-1]) for p in history_points]
-    if history_points is None:
-        mu_hat = mean(points, weights)
-        sigma_hat = cov(points, weights)
-    else:
-        mu_hat = mean(points, weights)
-        sigma_hat = cov(history_points, weights)
-    
-    """
-    cov allow weights have some 0s
-    """
-    tol = np.where(np.abs(mu_hat)>0, np.multiply(np.abs(mu_hat), tol), tol )
 
-    #the similar entries do not need to update
-    index = (sigma_hat > tol)       
-    if np.sum(index,axis=None)==0:
-        return mu_hat.reshape(shape)
-
-    if dim_red:
-        """
-        dimension reduction
-        compute in low dimension and go back to original dim after computation
-        """
-        transform_map, inverse_transeform_map = dim_reduce(points, weights, red_method)
-        points = np.dot(points, transform_map)
-        if weights is None:
-            mu_hat = mean(points, None)
-            sigma_hat = cov(points, None)
-        else:
-            mu_hat = mean(points, weights)
-            sigma_hat = cov(points, weights)
-        tol = np.where(np.abs(mu_hat)>0, np.multiply(np.abs(mu_hat), original_tol), original_tol )
-        #the similar entries do not need to update
-        index = (sigma_hat > tol)  
     """
     @Todo, what if np.linalg.inv(sigma_hat) not exist?
     Face computation issue in inverse computing
     some columns=0, inverse does not exist 
     """
-    for _ in range(max_iter):
-        if history_points is None:
-            d_gamma=[np.exp(-(gamma/2) * 
-                np.dot(np.dot(np.subtract(d, mu_hat),
-                    np.linalg.inv(sigma_hat)),
-                    np.transpose(np.subtract(d, mu_hat))))
-                for d in points]
-        else:
-            d_gamma=[np.exp(-(gamma/2) * 
-                np.dot(np.dot(np.subtract(d, mu_hat),
-                    np.linalg.inv(sigma_hat)),
-                    np.transpose(np.subtract(d, mu_hat))))
-                for d in history_points]
-        if np.all(np.array(d_gamma)==0):
-            if dim_red:
-                """
-                go back to original dim after computation
-                """
-                mu_hat = np.dot(mu_hat, inverse_transeform_map)
-            return mu_hat.reshape(shape)
-        
-        if dim_red or weights is None:
-            mu_hat = mean(points, d_gamma )
-            sigma_hat = cov(points, d_gamma)
-        else:
-            mu_hat = mean(points, weights=np.multiply(d_gamma,weights) )
-            sigma_hat = cov(points, np.multiply(d_gamma,weights) )
-        index = (sigma_hat > tol)
-        if np.sum(index,axis=None)==0:
-            if dim_red:
-                """
-                go back to original dim after computation
-                """
-                mu_hat = np.dot(mu_hat, inverse_transeform_map)
-            return mu_hat.reshape(shape)
-    if dim_red:
-        """
-        go back to original dim after computation
-        """
-        mu_hat = np.dot(mu_hat, inverse_transeform_map)
-    return mu_hat.reshape(shape)#.astype(points.dtype)
 
 def gamma_mean(points, weights=None, history_points=None, compute = "1D", gamma = 0.1, max_iter=10, 
                tol = 1e-7, remove=False, beta=0.1, dim_red=False, red_method='pca'):

@@ -1,7 +1,7 @@
 #import sys
 #sys.path.append("C:/GitHub\robust_federated_learning")
 import tensorflow.keras as keras
-import experiment_runner as experiment_runner
+import util.experiment_runner as experiment_runner
 #import numpy as np
 #import tensorflow as tf
 #import random
