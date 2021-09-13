@@ -19,8 +19,8 @@ import tensorflow as tf
 from aggregators import mean, median, trimmed_mean, gamma_mean, geometric_median
 import prepare_data.emnist as emnist
 import prepare_data.mnist as mnist
-from client import Client
-from server import Server
+from util.client import Client
+from util.server import Server
 #nest_asyncio.apply()
 
 
