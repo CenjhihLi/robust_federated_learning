@@ -3,8 +3,7 @@ import tensorflow as tf
 import random
 import gc
 class Server:
-  def __init__(self, model_factory, clients_importance_preprocess, weight_delta_aggregator, clients_per_round):
-    self._clients_importance_preprocess = clients_importance_preprocess
+  def __init__(self, model_factory, weight_delta_aggregator, clients_per_round):
     self._weight_delta_aggregator = weight_delta_aggregator
     self._clients_per_round = clients_per_round if clients_per_round == 'all' else int(clients_per_round)
 
@@ -17,7 +16,6 @@ class Server:
 
   def train(self, seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, #last_deltas,
             progress_callback):
-    client2importance = self._clients_importance_preprocess([c.num_of_samples for c in clients])
     if start_round>1:
       old_loss = history[-1][0]
 
@@ -88,11 +86,6 @@ class Server:
           print('')
 
       #last_deltas = [moments, velocs]
-
-      if client2importance is not None:
-        importance_weights = [client2importance[c.idx] for c in selected_clients]
-      else:
-        importance_weights = None
         
       if r==0:
         history_delta_sum = deltas
@@ -121,7 +114,7 @@ class Server:
       """
       old_server_weights = server_weights
       if 'record_gamma_mean_' in self._weight_delta_aggregator.__name__:
-        server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])
+        server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])
                         for i, w in enumerate(server_weights)]
         #server_weights = [w + clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights, history_points = [np.divide(h[i], r + 1) for h in history_delta_sum]), lr_decayed)
         #                for i, w in enumerate(server_weights)]
@@ -131,7 +124,7 @@ class Server:
         # todo change code below (to be nicer?):
         # aggregated_deltas = [self._weight_delta_aggregator(_, importance_weights) for _ in zip(*deltas)]
         # server_weights = [w + d for w, d in zip(server_weights, aggregated_deltas)]
-        server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], importance_weights)
+        server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas])
                           for i, w in enumerate(server_weights)]
         #server_weights = [w + clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights), lr_decayed)
         #                  for i, w in enumerate(server_weights)]
