@@ -1,8 +1,8 @@
 # Evaluation: MNIST, EMNIST
 
 Contains the emnist and mnist experiments. 
-The library requirement is in build_env.txt
-Recommend Anaconda + linux
+The library requirement is in build_env.txt.
+###Recommend Anaconda + linux###
 
 # Training
 
