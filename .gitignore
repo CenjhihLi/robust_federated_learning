@@ -1,5 +1,6 @@
 # Ignoring directories
 # This is the experiments results
+__pycache__/
 experiments/
 .ipynb_checkpoints/
 __pycache__/
