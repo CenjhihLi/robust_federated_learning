@@ -1,3 +1,4 @@
+#reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 from dataclasses import dataclass
 from typing import Sequence, Callable
 
