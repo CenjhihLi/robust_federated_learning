@@ -13,9 +13,6 @@ seed=1
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 
 we using some useful function refer from their code (but change quite much) and apply our gamma mean as an aggregator
-
-Author: Cen-Jhih Li
-Belongs: Academic Senica, Institute of statistic, Robust federated learning project
 """
 
 clients=20

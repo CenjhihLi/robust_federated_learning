@@ -1,7 +1,7 @@
 """
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 
-we using the experiments code and apply our gamma mean as an aggregator
+we using some useful function refer from their code (but change quite much) and apply our gamma mean as an aggregator
 """
 
 import itertools
