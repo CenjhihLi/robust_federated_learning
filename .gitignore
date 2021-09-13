@@ -4,10 +4,13 @@ experiments/
 .ipynb_checkpoints/
 __pycache__/
 # Ignoring file
-aggregators.py # release after publish paper
+# release after publish paper
+aggregators.py 
+# results and test file
 CNN_attackers_10%.pdf
 MLP_attackers_10%.pdf
 run_experiment_0.py
 test_seed.py
 test.py
 print_test.py
+
