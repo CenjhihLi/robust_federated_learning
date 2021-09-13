@@ -1,10 +1,3 @@
-"""
-reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
-functions: fs_setup,
-
-Author: Cen-Jhih Li
-Belongs: Academic Senica, Institute of statistic, Robust federated learning project
-"""
 import numpy as np
 import tensorflow as tf
 import tensorflow_federated as tff
