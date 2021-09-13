@@ -16,16 +16,16 @@ from scipy.linalg import svd
 
 
 # reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
-def mean(points, weights):
+def mean(points, weights=None):
     return np.average(points, axis=0, weights=weights)#.astype(points.dtype)
 
 
-def std(points, weights):
+def std(points, weights=None):
     mu = mean(points, weights)
     return np.sqrt(mean(np.subtract(points, mu)**2, weights))
 
 
-def cov(points, weights):
+def cov(points, weights=None):
     """
     points.shape = (m, p=[...])
     cov.shape should be (p, p)
@@ -51,7 +51,7 @@ Too slow in parameter for loop
 """
 
 
-def coordinatewise(fn, points, weights):
+def coordinatewise(fn, points, weights=None):
     if len(points) == 1:
         return fn(points, weights)
     shape = np.shape(points[0])
@@ -284,8 +284,7 @@ def simple_gamma_mean(points, weights=None, history_points=None, gamma = 0.1, ma
             mu_hat[index] = mean(points, weights=np.multiply(d_gamma,weights) )[index]
     return mu_hat#.astype(points.dtype)
 
-
-def dim_reduce(points, weights, method, dim = None):
+def dim_reduce(points, weights=None, method='pca', dim = None):
     """
     points: (m, p)
     cov--> (p, p)
@@ -322,7 +321,6 @@ def dim_reduce(points, weights, method, dim = None):
         return
     elif method=='incremental_pca':
         return
-
 
 def gamma_mean_2D(points, weights=None, history_points=None, gamma = 0.1, max_iter=10, tol = 1e-7, dim_red=False, red_method='pca'):
     """

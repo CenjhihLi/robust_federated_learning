@@ -16,7 +16,7 @@ from functools import partial
 import numpy as np
 import tensorflow as tf
 
-from aggregators import mean, median, trimmed_mean, gamma_mean, geometric_median
+from util.aggregators import mean, median, trimmed_mean, gamma_mean, geometric_median
 import prepare_data.emnist as emnist
 import prepare_data.mnist as mnist
 from util.client import Client
@@ -70,7 +70,6 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         'partition_config': partition_config
     })
     expr_basename = f'{server_config["weight_delta_aggregator"].__name__}' \
-                  f'{server_config["clients_importance_preprocess"].prefix}' \
                   f'_cpr_{server_config["clients_per_round"]}' \
                   f'{(threat_model.prefix if threat_model is not None else "")}'
     expr_file = experiment_dir / f'{expr_basename}.npz'
@@ -133,18 +132,6 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     #                server_weights=server_weights, history_delta_sum=history_delta_sum, last_deltas = last_deltas))
 
 
-def passthrough_preprocess(_): return _
-
-
-passthrough_preprocess.prefix = '_w'
-
-
-def ignore_weights_preprocess(_): return None
-
-
-ignore_weights_preprocess.prefix = ''
-
-
 @dataclass(frozen=True)
 class Threat_model:
   type: str
@@ -185,7 +172,6 @@ def run_all(experiment, model_factory, input_shape,
     geo_mean.__name__ = 'geometric_median'
   
     weight_delta_aggregators = [r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean, t_mean, median, median, mean]
-    preprocessors = [ignore_weights_preprocess]
     
     threat_models = [None] if (attack_type is None or real_alpha==0) else [
         Threat_model(type=attack_type, num_samples_per_attacker=num_samples_per_attacker,
@@ -194,13 +180,12 @@ def run_all(experiment, model_factory, input_shape,
                                 real_alpha=real_alpha),
                         ]
 
-    for (threat_model, wda, preprocessor) in itertools.product(threat_models, weight_delta_aggregators, preprocessors):
+    for (threat_model, wda) in itertools.product(threat_models, weight_delta_aggregators):
         run_experiment(experiment,
                         seed=seed,
                         model_factory=model_factory,
                         input_shape = input_shape,
                         server_config={
-                           'clients_importance_preprocess': preprocessor,
                            'weight_delta_aggregator': wda,
                            'clients_per_round': cpr,
                            },
