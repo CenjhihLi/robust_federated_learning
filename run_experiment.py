@@ -12,7 +12,7 @@ seed=1
 """
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 
-we using some useful function refer from their code (but change quite much) and apply our gamma mean as an aggregator
+we using some useful function refer from their code (but change quite much) and apply our gamma mean and geometric median as aggregators
 """
 
 clients=20
