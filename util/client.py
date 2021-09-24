@@ -35,9 +35,11 @@ class Client():
       
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'random':
       return [np.random.normal(size = _.shape) for _ in server_weights]
-    #Since local machine do not have last update v and only iterate once, Adam = Sgd here
+
+    #Since local machine do not have last update v and only iterate once, Adam is not work here, should employ Adam in server
     self._model.compile(
-      optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ),
+      #optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ), #fluctuated loss
+      optimizer = tf.keras.optimizers.SGD( learning_rate = lr_decayed ),
       loss = tf.keras.losses.SparseCategoricalCrossentropy(),
     )
 

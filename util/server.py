@@ -36,9 +36,9 @@ class Server:
       selected_clients = clients if self._clients_per_round == 'all' \
         else np.random.choice(clients, self._clients_per_round, replace=False)
       
-      np.random.seed(seed+r+1)
-      tf.random.set_seed(seed+r+1)
-      random.seed(seed+r+1)
+      #np.random.seed(seed+r+1)
+      #tf.random.set_seed(seed+r+1)
+      #random.seed(seed+r+1)
 
       def decayed_learning_rate(initial_learning_rate, step, decay_steps = 1000, alpha = 0):
         step = min(step, decay_steps)
@@ -51,7 +51,7 @@ class Server:
         lr_decayed = 0.9*lr_decayed
 
       def Adam(lm, lv, d, lr_decayed, beta_1 = 0.9, beta_2 = 0.999, epsilon = 1e-7):
-        g = np.multiply( lr_decayed, d)
+        g = np.multiply( lr_decayed, d) #since the delta return from clients including lr_decayed factor
         m = np.divide(np.multiply( beta_1, lm) + np.multiply( 1-beta_1, g), 1 - np.power(beta_1, r+1) ) 
         v = np.divide(np.multiply( beta_2, lv) + np.multiply( 1-beta_2, np.square(g)), 1 - np.power(beta_2, r+1))  
         d = np.divide( np.multiply( lr_decayed, m),  np.add( np.sqrt(v), epsilon) )
@@ -134,7 +134,7 @@ class Server:
       self.model.set_weights(server_weights)
       loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
       if r>=np.maximum(num_of_rounds*0.5, 500):
-        if loss > 1.01*old_loss:
+        if loss > old_loss: #need to find some way to avoid going into local minimum
           self.model.set_weights(old_server_weights)
           server_weights = old_server_weights
           loss, acc = self.model.evaluate(test_x, test_y, verbose=0)

@@ -172,7 +172,8 @@ def run_all(experiment, model_factory, input_shape,
     geo_mean.__name__ = 'geometric_median'
   
     weight_delta_aggregators = [r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean, t_mean, median, median, mean]
-    
+    #weight_delta_aggregators = [r_gam_mean_s, gam_mean_s, geo_mean, t_mean, median, median, mean]
+
     threat_models = [None] if (attack_type is None or real_alpha==0) else [
         Threat_model(type=attack_type, num_samples_per_attacker=num_samples_per_attacker,
                      f=real_alpha) if real_alpha_as_f else Threat_model(type=attack_type,
