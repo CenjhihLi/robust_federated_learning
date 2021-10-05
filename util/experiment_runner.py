@@ -19,6 +19,8 @@ import tensorflow as tf
 from util.aggregators import mean, median, trimmed_mean, gamma_mean, geometric_median
 import prepare_data.emnist as emnist
 import prepare_data.mnist as mnist
+import prepare_data.fashion_mnist as fashion_mnist
+import prepare_data.pneumonia as pneumonia
 from util.client import Client
 from util.server import Server
 #nest_asyncio.apply()
@@ -106,12 +108,14 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     https://www.tensorflow.org/federated/api_docs/python/tff/simulation/datasets/emnist/load_data?hl=zh-tw
     """
     if dataset == "emnist":
-        train_data, test_x, test_y  = emnist.prepare_data(client = partition_config['#clients'],
-                                                          reshape = input_shape)
-
+        train_data, test_x, test_y  = emnist.load(client = partition_config['#clients'],
+                                                  reshape = input_shape)
     elif dataset == "mnist":
-        (partitioned_x_train, partitioned_y_train), (test_x, test_y) = mnist.load(partition_config, input_shape)
-        train_data = zip(partitioned_x_train, partitioned_y_train)
+        train_data, (test_x, test_y) = mnist.load(partition_config, input_shape) 
+    elif dataset == "fashion_mnist":
+        train_data, (test_x, test_y) = fashion_mnist.load(partition_config, input_shape)
+    elif dataset == "pneumonia":
+        train_data, (test_x, test_y) = pneumonia.load(partition_config, input_shape)
     
     clients = [
         Client(i, data, model_factory)

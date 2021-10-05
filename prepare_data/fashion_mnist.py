@@ -14,7 +14,7 @@ def load(partition_config, input_shape):
       np.divide(x.reshape([x.shape[0]]+input_shape), 255., dtype=np.float32),
       y.astype(np.int32).reshape((y.shape[0], -1))
     )
-    for x, y in tf.keras.datasets.mnist.load_data()
+    for x, y in tf.keras.datasets.fashion_mnist.load_data()
   ]
 
   partition = Partition.random_log_normal_partition(

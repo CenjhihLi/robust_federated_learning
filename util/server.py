@@ -41,12 +41,12 @@ class Server:
       #random.seed(seed+r+1)
 
       def decayed_learning_rate(initial_learning_rate, step, decay_steps = 1000, alpha = 0):
-        step = min(step, decay_steps)
+        step = min(step, decay_steps-1)
         cosine_decay = 0.5 * (1 + np.cos( np.pi * step / decay_steps))
         decayed = (1 - alpha) * cosine_decay + alpha
         return initial_learning_rate * decayed
       if loss_descent or r<np.maximum(num_of_rounds*0.5, 500):
-        lr_decayed = decayed_learning_rate ( initial_learning_rate = 5e-2, step = r + 1)
+        lr_decayed = decayed_learning_rate ( initial_learning_rate = 1e-1, step = r + 1)
       else:
         lr_decayed = 0.9*lr_decayed
 

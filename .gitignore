@@ -2,6 +2,7 @@
 # This is the experiments results
 __pycache__/
 experiments/
+prepare_data/CellData/
 .ipynb_checkpoints/
 __pycache__/
 # Ignoring file

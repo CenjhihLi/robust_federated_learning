@@ -2,13 +2,13 @@
 #sys.path.append("C:/GitHub\robust_federated_learning")
 import tensorflow.keras as keras
 import util.experiment_runner as experiment_runner
-#import numpy as np
-#import tensorflow as tf
-#import random
+import numpy as np
+import tensorflow as tf
+import random
 seed=1
-#np.random.seed(seed)
-#tf.random.set_seed(seed)
-#random.seed(seed)
+np.random.seed(seed)
+tf.random.set_seed(seed)
+random.seed(seed)
 """
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 

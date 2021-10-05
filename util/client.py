@@ -38,7 +38,7 @@ class Client():
 
     #Since local machine do not have last update v and only iterate once, Adam is not work here, should employ Adam in server
     self._model.compile(
-      #optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ), #fluctuated loss
+      #optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ), 
       optimizer = tf.keras.optimizers.SGD( learning_rate = lr_decayed ),
       loss = tf.keras.losses.SparseCategoricalCrossentropy(),
     )
