@@ -29,7 +29,7 @@ class Client():
 
     self.num_of_samples = self.threat_model.num_samples_per_attacker
 
-  def train(self, server_weights, lr_decayed):
+  def train(self, server_weights, lr_decayed, optimizer, loss):
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'delta_to_zero':
       return [-_ for _ in server_weights]
       
@@ -39,8 +39,8 @@ class Client():
     #Since local machine do not have last update v and only iterate once, Adam is not work here, should employ Adam in server
     self._model.compile(
       #optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ), 
-      optimizer = tf.keras.optimizers.SGD( learning_rate = lr_decayed ),
-      loss = tf.keras.losses.SparseCategoricalCrossentropy(),
+      optimizer = optimizer( learning_rate = lr_decayed ),
+      loss = loss(),
     )
 
     self._model.set_weights(server_weights)

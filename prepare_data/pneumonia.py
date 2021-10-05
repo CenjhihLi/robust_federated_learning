@@ -28,6 +28,7 @@ def load(partition_config, input_shape = [150,150,3]):
 
     x_train, y_train = tfdataset2array(train)
     x_train = np.divide(tf.reshape(x_train[0], [x_train[0].shape[0]] + input_shape), 255., dtype=np.float32)
+    y_train = y_train[0]
 
     partition = Partition.random_log_normal_partition(
     PartitionParams(
@@ -44,13 +45,14 @@ def load(partition_config, input_shape = [150,150,3]):
     partitioned_x_train, partitioned_y_train = [partition.fn(data) for data in (x_train, y_train)]
 
     test = image_dataset_from_directory(
-            './prepare_data/CellData/chest_xray/train',
+            './prepare_data/CellData/chest_xray/test',
             label_mode='categorical',
             batch_size=624,
             image_size=(150, 150))
 
     test_x, test_y = tfdataset2array(test)
     test_x = np.divide(tf.reshape(test_x[0], [test_x[0].shape[0]] + input_shape), 255., dtype=np.float32)
+    test_y = test_y[0]
 
     train_data = zip(partitioned_x_train, partitioned_y_train)
     return train_data, (test_x, test_y)

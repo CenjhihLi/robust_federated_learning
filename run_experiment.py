@@ -5,6 +5,8 @@ import util.experiment_runner as experiment_runner
 import numpy as np
 import tensorflow as tf
 import random
+from tensorflow.keras.applications import resnet50, xception
+
 seed=1
 np.random.seed(seed)
 tf.random.set_seed(seed)
