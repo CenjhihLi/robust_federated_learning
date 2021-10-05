@@ -46,7 +46,7 @@ def load(partition_config, input_shape = [150,150,3]):
     test = image_dataset_from_directory(
             './prepare_data/CellData/chest_xray/train',
             label_mode='categorical',
-            batch_size=32,
+            batch_size=624,
             image_size=(150, 150))
 
     test_x, test_y = tfdataset2array(test)
