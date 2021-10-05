@@ -29,7 +29,7 @@ class Client():
 
     self.num_of_samples = self.threat_model.num_samples_per_attacker
 
-  def train(self, server_weights, lr_decayed, optimizer, loss):
+  def train(self, server_weights, lr_decayed, optimizer, loss_fn):
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'delta_to_zero':
       return [-_ for _ in server_weights]
       
@@ -40,7 +40,7 @@ class Client():
     self._model.compile(
       #optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ), 
       optimizer = optimizer( learning_rate = lr_decayed ),
-      loss = loss,
+      loss = loss_fn,
     )
 
     self._model.set_weights(server_weights)

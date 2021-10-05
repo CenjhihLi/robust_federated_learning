@@ -9,15 +9,16 @@ class Server:
 
     self.model = model_factory()
 
-    self.model.compile(
-      metrics=['accuracy']
-    )
-
   def train(self, seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
             optimizer, loss_fn, #last_deltas,
             progress_callback):
     if start_round>1:
       old_loss = history[-1][0]
+
+    self.model.compile(
+      loss = loss_fn,
+      metrics = ['accuracy']
+    )
 
     loss_descent = True
     server_weights = self.model.get_weights()
