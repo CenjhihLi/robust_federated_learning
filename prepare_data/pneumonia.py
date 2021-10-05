@@ -28,7 +28,7 @@ def load(partition_config, input_shape = [150,150,3]):
 
     x_train, y_train = tfdataset2array(train)
     x_train = np.divide(tf.reshape(x_train[0], [x_train[0].shape[0]] + input_shape), 255., dtype=np.float32)
-    y_train = y_train[0]
+    y_train = tf.reshape(y_train[0][:,1],[-1,1])
 
     partition = Partition.random_log_normal_partition(
     PartitionParams(
@@ -52,7 +52,7 @@ def load(partition_config, input_shape = [150,150,3]):
 
     test_x, test_y = tfdataset2array(test)
     test_x = np.divide(tf.reshape(test_x[0], [test_x[0].shape[0]] + input_shape), 255., dtype=np.float32)
-    test_y = test_y[0]
+    test_y = tf.reshape(test_y[0][:,1],[-1,1])
 
     train_data = zip(partitioned_x_train, partitioned_y_train)
     return train_data, (test_x, test_y)
