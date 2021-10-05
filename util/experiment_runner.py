@@ -110,12 +110,20 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     if dataset == "emnist":
         train_data, test_x, test_y  = emnist.load(client = partition_config['#clients'],
                                                   reshape = input_shape)
+        optimizer = tf.keras.optimizers.SGD
+        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
     elif dataset == "mnist":
         train_data, (test_x, test_y) = mnist.load(partition_config, input_shape) 
+        optimizer = tf.keras.optimizers.SGD
+        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
     elif dataset == "fashion_mnist":
         train_data, (test_x, test_y) = fashion_mnist.load(partition_config, input_shape)
+        optimizer = tf.keras.optimizers.SGD
+        loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
     elif dataset == "pneumonia":
         train_data, (test_x, test_y) = pneumonia.load(partition_config, input_shape)
+        optimizer = tf.keras.optimizers.SGD
+        loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
     
     clients = [
         Client(i, data, model_factory)
@@ -129,6 +137,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         for client in attackers:
             client.as_attacker(threat_model)
     server.train(seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
+                 optimizer, loss_fn,
                  lambda history, server_weights, history_delta_sum: np.savez(expr_file, history=history, 
                     server_weights=server_weights, history_delta_sum=history_delta_sum))
     #server.train(seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, last_deltas,

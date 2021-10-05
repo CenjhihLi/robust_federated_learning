@@ -40,7 +40,7 @@ class Client():
     self._model.compile(
       #optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ), 
       optimizer = optimizer( learning_rate = lr_decayed ),
-      loss = loss(),
+      loss = loss,
     )
 
     self._model.set_weights(server_weights)

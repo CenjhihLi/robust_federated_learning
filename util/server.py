@@ -10,12 +10,11 @@ class Server:
     self.model = model_factory()
 
     self.model.compile(
-      loss=tf.keras.losses.SparseCategoricalCrossentropy(),
       metrics=['accuracy']
     )
 
   def train(self, seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
-            optimizer, loss, #last_deltas,
+            optimizer, loss_fn, #last_deltas,
             progress_callback):
     if start_round>1:
       old_loss = history[-1][0]
@@ -72,7 +71,7 @@ class Server:
       for i, client in enumerate(selected_clients):
         print(f'{expr_basename} round={r + 1}/{num_of_rounds}, client {i + 1}/{self._clients_per_round}',
               end='')
-        delta = client.train(server_weights, lr_decayed, optimizer, loss)
+        delta = client.train(server_weights, lr_decayed, optimizer, loss_fn)
         #if r > 0:
         #  lms, lvs, delta = zip(*[ Adam(m, v, d, lr_decayed) for m, v, d in zip(last_m[i], last_v[i], delta)])
         #else: 
