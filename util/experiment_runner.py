@@ -10,6 +10,7 @@ import json
 import pathlib
 import random
 import collections
+import gc
 from dataclasses import dataclass, field
 from functools import partial
 
@@ -103,11 +104,11 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     np.random.seed(seed)
     tf.random.set_seed(seed)
     random.seed(seed)
-    """
-    Use emnist dataset provided by tff:
-    https://www.tensorflow.org/federated/api_docs/python/tff/simulation/datasets/emnist/load_data?hl=zh-tw
-    """
     if dataset == "emnist":
+        """
+        Use emnist dataset provided by tff:
+        https://www.tensorflow.org/federated/api_docs/python/tff/simulation/datasets/emnist/load_data?hl=zh-tw
+        """
         train_data, test_x, test_y  = emnist.load(client = partition_config['#clients'],
                                                   reshape = input_shape)
         optimizer = tf.keras.optimizers.SGD
@@ -121,6 +122,10 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
     elif dataset == "pneumonia":
+        """
+        Use pneumonia dataset provided by:
+        https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia
+        """
         train_data, (test_x, test_y) = pneumonia.load(partition_config, input_shape)
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
@@ -129,13 +134,16 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         Client(i, data, model_factory)
         for i, data in enumerate(train_data)
         ]
-    
     if threat_model is not None:
         attackers = np.random.choice(clients, int(
             len(clients) * threat_model.real_alpha) if threat_model.real_alpha is not None else threat_model.f, replace=False)
-        print(attackers)
         for client in attackers:
             client.as_attacker(threat_model)
+
+    del train_data
+    del threat_model
+    gc.collect()
+
     server.train(seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
                  optimizer, loss_fn,
                  lambda history, server_weights, history_delta_sum: np.savez(expr_file, history=history, 

@@ -6,7 +6,10 @@ from tensorflow.keras.preprocessing import image_dataset_from_directory
 from tensorflow import keras
 from prepare_data.transform import tfdataset2array
 from prepare_data.partition_v2 import Partition, PartitionParams
-
+"""
+Use pneumonia dataset provided by:
+https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia
+"""
 #datagen = ImageDataGenerator(rescale=1./255)
 #train_generator = datagen.flow_from_directory(
 #        './prepare_data/CellData/chest_xray/train',
