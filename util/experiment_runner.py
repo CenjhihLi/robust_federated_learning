@@ -140,14 +140,15 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         for client in attackers:
             client.as_attacker(threat_model)
 
-    del train_data
-    del threat_model
+    del train_data, threat_model
     gc.collect()
 
     server.train(seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
                  optimizer, loss_fn,
                  lambda history, server_weights, history_delta_sum: np.savez(expr_file, history=history, 
                     server_weights=server_weights, history_delta_sum=history_delta_sum))
+    del server, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, optimizer, loss_fn
+    gc.collect()
     #server.train(seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, last_deltas,
     #             lambda history, server_weights, history_delta_sum, last_deltas: np.savez(expr_file, history=history, 
     #                server_weights=server_weights, history_delta_sum=history_delta_sum, last_deltas = last_deltas))
