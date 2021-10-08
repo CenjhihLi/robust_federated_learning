@@ -5,11 +5,20 @@ we using some useful function refer from their code (but change quite much) and 
 
 Author: Cen-Jhih Li
 Belongs: Academic Senica, Institute of statistic, Robust federated learning project
-# Evaluation: MNIST, EMNIST
+# Dataset: MNIST, EMNIST
 
-Contains the emnist and mnist experiments. 
-The library requirement is in build_env.txt.
-###Recommend Anaconda + linux###
+Contains the emnist, mnist, fashion_MNIST, chest xray data. 
+
+# Build environment in anaconda
+see build_env.txt 
+
+# Build environment via Docker:
+docker "args" pull nvcr.io/nvidia/tensorflow:21.09-tf2-py3
+pip install matplotlib wquantiles nest_asyncio 
+
+Ubundo 16, 18, and 20 should all be fine
+
+if using EMNIST, then install tensorflow-federated
 
 # Training
 

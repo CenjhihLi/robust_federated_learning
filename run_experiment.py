@@ -38,6 +38,25 @@ def cnn_model_factory():
         keras.layers.Dense(10, activation='softmax')
         ])
 
+def cnn2_model_factory():
+    return keras.models.Sequential([
+        keras.layers.Conv2D(filters=32, kernel_size=3, 
+                            input_shape=(28, 28, 1), activation='relu', 
+                            padding='same'),
+        keras.layers.MaxPool2D(pool_size=2),
+        keras.layers.Conv2D(filters=64, kernel_size=3, 
+                            activation='relu', 
+                            padding='same'),
+        keras.layers.MaxPool2D(pool_size=2),
+        keras.layers.Conv2D(filters=128, kernel_size=3, 
+                            activation='relu', 
+                            padding='same'),
+        keras.layers.Flatten(),
+        keras.layers.Dense(128, activation='relu'),
+        keras.layers.Dropout(0.2),
+        keras.layers.Dense(10, activation='softmax')
+        ])
+
 #model_factory = cnn_model_factory
 #input_shape = [28,28,1]
 #model_factory = mlp_model_factory
@@ -80,13 +99,13 @@ experiment_runner.run_all('cnn_expr_random',
                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
 experiment_runner.run_all('fashion_mnist_cnn_expr_no_attacks',
-                          model_factory = cnn_model_factory, input_shape=[28,28,1], dataset='fashion_mnist',
+                          model_factory = cnn2_model_factory, input_shape=[28,28,1], dataset='fashion_mnist',
                           seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, 
                           real_alpha=0, t_mean_beta=0.1, clients=clients,
                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
 experiment_runner.run_all('fashion_mnist_cnn_expr_random', 
-                          model_factory = cnn_model_factory, input_shape=[28,28,1], dataset='fashion_mnist',
+                          model_factory = cnn2_model_factory, input_shape=[28,28,1], dataset='fashion_mnist',
                           seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0.1,
                           num_samples_per_attacker=1_000_000, 
                           attack_type='random', t_mean_beta=0.1, clients=clients,
