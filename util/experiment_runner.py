@@ -113,14 +113,17 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
                                                   reshape = input_shape)
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
+        initial_lr = 5e-2
     elif dataset == "mnist":
         train_data, (test_x, test_y) = mnist.load(partition_config, input_shape) 
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
+        initial_lr = 1e-1
     elif dataset == "fashion_mnist":
         train_data, (test_x, test_y) = fashion_mnist.load(partition_config, input_shape)
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
+        initial_lr = 5e-2
     elif dataset == "pneumonia":
         """
         Use pneumonia dataset provided by:
@@ -129,6 +132,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         train_data, (test_x, test_y) = pneumonia.load(partition_config, input_shape)
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+        initial_lr = 1e-4
     
     clients = [
         Client(i, data, model_factory)
@@ -144,10 +148,11 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     gc.collect()
 
     server.train(seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
-                 optimizer, loss_fn,
+                 optimizer, loss_fn, initial_lr, 
                  lambda history, server_weights, history_delta_sum: np.savez(expr_file, history=history, 
                     server_weights=server_weights, history_delta_sum=history_delta_sum))
-    del server, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, optimizer, loss_fn
+    del server, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, optimizer, loss_fn, initial_lr
+    tf.keras.backend.clear_session()
     gc.collect()
     #server.train(seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, last_deltas,
     #             lambda history, server_weights, history_delta_sum, last_deltas: np.savez(expr_file, history=history, 

@@ -56,6 +56,7 @@ def cnn2_model_factory():
         keras.layers.Dropout(0.2),
         keras.layers.Dense(10, activation='softmax')
         ])
+#seems not better
 
 #model_factory = cnn_model_factory
 #input_shape = [28,28,1]
@@ -65,7 +66,6 @@ def cnn2_model_factory():
 def res_model_factory():
     model=resnet50.ResNet50(input_shape=(150,150,3),weights='imagenet',include_top=False, )
     inputs = keras.Input(shape=(150, 150, 3))
-    x = model(inputs, training=False)
     x = keras.layers.Flatten()(x)
     x = keras.layers.Dense(256,activation='relu')(x)
     x = keras.layers.Dropout(0.2)(x)
@@ -99,13 +99,13 @@ experiment_runner.run_all('cnn_expr_random',
                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
 experiment_runner.run_all('fashion_mnist_cnn_expr_no_attacks',
-                          model_factory = cnn2_model_factory, input_shape=[28,28,1], dataset='fashion_mnist',
+                          model_factory = cnn_model_factory, input_shape=[28,28,1], dataset='fashion_mnist',
                           seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, 
                           real_alpha=0, t_mean_beta=0.1, clients=clients,
                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
 experiment_runner.run_all('fashion_mnist_cnn_expr_random', 
-                          model_factory = cnn2_model_factory, input_shape=[28,28,1], dataset='fashion_mnist',
+                          model_factory = cnn_model_factory, input_shape=[28,28,1], dataset='fashion_mnist',
                           seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0.1,
                           num_samples_per_attacker=1_000_000, 
                           attack_type='random', t_mean_beta=0.1, clients=clients,

@@ -10,7 +10,7 @@ class Server:
     self.model = model_factory()
 
   def train(self, seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
-            optimizer, loss_fn, #last_deltas,
+            optimizer, loss_fn, initial_lr, #last_deltas,
             progress_callback):
     if start_round>1:
       old_loss = history[-1][0]
@@ -47,7 +47,7 @@ class Server:
         decayed = (1 - alpha) * cosine_decay + alpha
         return initial_learning_rate * decayed
       if loss_descent or r<np.maximum(num_of_rounds*0.5, 500):
-        lr_decayed = decayed_learning_rate ( initial_learning_rate = 1e-1, step = r + 1)
+        lr_decayed = decayed_learning_rate ( initial_learning_rate = initial_lr, step = r + 1)
       else:
         lr_decayed = 0.9*lr_decayed
 
