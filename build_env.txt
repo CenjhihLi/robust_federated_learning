@@ -8,3 +8,5 @@ conda install tensorflow=2.3
 pip install wquantiles=0.6
 pip install nest_asyncio
 pip install tensorflow-federated=0.17.0
+python -m pip install -U setuptools pip
+pip install cupy-cuda101

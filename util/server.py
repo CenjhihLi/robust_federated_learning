@@ -1,5 +1,8 @@
 import numpy as np
 import tensorflow as tf
+#import cupy as cp
+#we might not use np since the cpu computing is surprising large
+#need to use tf or cp
 import random
 import gc
 class Server:

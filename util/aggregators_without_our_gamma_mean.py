@@ -8,6 +8,10 @@ Belongs: Academia Sinica, Institute of Statistical Science, Robust federated lea
 """
 
 import numpy as np
+import tensorflow as tf
+#import cupy as cp
+#we might not use np since the cpu computing is surprising large
+#need to use tf or cp
 import wquantiles as w
 
 from functools import partial

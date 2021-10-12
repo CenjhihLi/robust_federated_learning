@@ -14,7 +14,9 @@ see build_env.txt
 
 # Build environment via Docker:
 docker "args" pull nvcr.io/nvidia/tensorflow:21.09-tf2-py3
-pip install matplotlib wquantiles nest_asyncio 
+python -m pip install -U setuptools pip
+
+pip install matplotlib wquantiles nest_asyncio cupy-cuda101 tensorflow-federated==0.17.0
 
 Ubundo 16, 18, and 20 should all be fine
 
