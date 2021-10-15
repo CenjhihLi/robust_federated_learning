@@ -14,7 +14,7 @@ def plot_range(experiments, ax, plot_start, plot_end, metric_idx=1, ylim=None, l
 #         ax.set_ylabel('Loss')
         
 #     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-        
+    labels = []
     for path, label, alpha, linestyle in experiments:
 #         if alpha == 1:
 #             marker = 'P'
@@ -30,12 +30,13 @@ def plot_range(experiments, ax, plot_start, plot_end, metric_idx=1, ylim=None, l
             ax.plot(range(plot_start, min(len(history), plot_end)),
                     history[plot_start:min(len(history), plot_end), metric_idx], label=label, #alpha=alpha, #color=color,# marker=marker,
                     linestyle=linestyle)
-            if label_final:
-                ax.legend(
-                    labels=['final = {:.4f}'.format(history[min(len(history), plot_end)-1][1])],
-                    loc="lower right",
-                    )
-
+            labels.append('final: {:.4f}'.format(history[min(len(history), plot_end)-1][1]))
+    
+    if label_final:
+        ax.legend(
+            labels=labels,
+            loc="best",
+            )
     if ylim is not None:
         ax.set_ylim(ylim)
 #     ax.set_xlabel('Round')
