@@ -1,9 +1,3 @@
-"""
-reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
-
-we using some useful function refer from their code (but change quite much) and apply our gamma mean and geometric median as aggregators
-"""
-
 import itertools
 import json
 #import os
@@ -33,6 +27,7 @@ def fs_setup(experiment_name, seed, config):
     Setup the experiments fold and use config.json to record 
     the parameters of experiment
     This will use in run_experiment
+    very useful since the experiment always stop...
     """
     root_dir = pathlib.Path(f'experiments') / experiment_name
     #root_dir = os.path.join(f'experiments',experiment_name)
@@ -61,8 +56,6 @@ def fs_setup(experiment_name, seed, config):
 
 """
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
-this research use mnist
-we use emnist istead of mnist
 """
 def run_experiment(experiment_name, seed, model_factory, input_shape, server_config,
                    partition_config, dataset, num_of_rounds, threat_model):
@@ -81,7 +74,6 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     The following part allow the experiment continue from the last stop round
     in server.train: for round in range(start_round,num_of_rounds)
         store server_weights&history in each iteration
-    reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
     """
     if expr_file.is_file():
         prev_results = np.load(expr_file, allow_pickle=True)
@@ -157,6 +149,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     #server.train(seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, last_deltas,
     #             lambda history, server_weights, history_delta_sum, last_deltas: np.savez(expr_file, history=history, 
     #                server_weights=server_weights, history_delta_sum=history_delta_sum, last_deltas = last_deltas))
+    #for adam
 
 
 @dataclass(frozen=True)

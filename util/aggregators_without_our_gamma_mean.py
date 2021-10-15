@@ -173,11 +173,13 @@ def gamma_mean_1D(points, weights=None, history_points=None, gamma = 0.1, max_it
     We use element-wise mu & sigma, (diagnal cov)
     gamma_mean
     """
+    pass
 
 def simple_gamma_mean(points, weights=None, history_points=None, gamma = 0.1, max_iter=10, tol = 1e-7, remove=False, beta=0.1):
     """
     Do not consider cov inverse in distance compute (identity cov)
     """
+    pass
 
 def dim_reduce(points, weights, method, dim = None):
     """
@@ -198,6 +200,7 @@ def dim_reduce(points, weights, method, dim = None):
     lowdim_data = np.dot(points, transform_map)
     approx_estimate = np.dot(lowdim_data, inverse_transeform_map)
     """
+    pass
 
 def gamma_mean_2D(points, weights=None, history_points=None, gamma = 0.1, max_iter=10, tol = 1e-7, dim_red=False, red_method='pca'):
     """
@@ -210,6 +213,7 @@ def gamma_mean_2D(points, weights=None, history_points=None, gamma = 0.1, max_it
     Face computation issue in inverse computing
     some columns=0, inverse does not exist 
     """
+    pass
 
 def gamma_mean(points, weights=None, history_points=None, compute = "1D", gamma = 0.1, max_iter=10, 
                tol = 1e-7, remove=False, beta=0.1, dim_red=False, red_method='pca'):

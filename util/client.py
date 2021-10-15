@@ -2,6 +2,10 @@
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 
 add random attack
+The author use a object dataset for the class threat_model
+
+Maybe change this class since we might only need attack type
+not sure now
 """
 
 import numpy as np
