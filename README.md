@@ -17,6 +17,7 @@ docker "args" pull nvcr.io/nvidia/tensorflow:21.09-tf2-py3
 python -m pip install -U setuptools pip
 
 pip install matplotlib wquantiles nest_asyncio cupy-cuda101 tensorflow-federated==0.17.0
+pip install --upgrade git+https://github.com/MedMNIST/MedMNIST.git
 
 Ubundo 16, 18, and 20 should all be fine
 
