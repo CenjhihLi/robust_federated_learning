@@ -10,3 +10,4 @@ pip install nest_asyncio
 pip install tensorflow-federated=0.17.0
 python -m pip install -U setuptools pip
 pip install cupy-cuda101
+pip install --upgrade git+https://github.com/MedMNIST/MedMNIST.git

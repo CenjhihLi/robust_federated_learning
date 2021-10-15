@@ -64,13 +64,13 @@ def cnn2_model_factory():
 #input_shape = [-1]
 
 def res_model_factory():
-    model=resnet50.ResNet50(input_shape=(150,150,3),weights='imagenet',include_top=False, )
-    inputs = keras.Input(shape=(150, 150, 3))
+    model=resnet50.ResNet50(input_shape=(150,150,3), weights='imagenet', include_top=False, )
+    x = model.output
     x = keras.layers.Flatten()(x)
     x = keras.layers.Dense(256,activation='relu')(x)
     x = keras.layers.Dropout(0.2)(x)
     x = keras.layers.Dense(1,activation='sigmoid')(x)
-    return keras.Model(inputs, x)
+    return keras.Model(model.input, x)
 
 experiment_runner.run_all('expr_no_attacks',
                           mlp_model_factory, input_shape=[-1], dataset='mnist',

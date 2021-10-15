@@ -132,7 +132,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         train_data, (test_x, test_y) = pneumonia.load(partition_config, input_shape)
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        initial_lr = 1e-4
+        initial_lr = 5e-5
     
     clients = [
         Client(i, data, model_factory)
