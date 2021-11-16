@@ -8,5 +8,14 @@ def tfdataset2array(dataset):
         ydata.append(y)
     xdata = np.array(xdata)
     ydata = np.array(ydata)
-    ydata.reshape([-1,1])
+    return xdata, ydata
+
+def tfgenerator2array(generator):
+    xdata=[]
+    ydata=[]
+    for x, y in generator:
+        xdata.append(x)
+        ydata.append(y)
+    xdata = np.concatenate(xdata, axis = 0)
+    ydata = np.concatenate(ydata, axis = 0)
     return xdata, ydata

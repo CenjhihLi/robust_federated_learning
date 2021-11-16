@@ -2,17 +2,28 @@
 # This is the experiments results
 __pycache__/
 experiments/
+plot/
 prepare_data/CellData/
 .ipynb_checkpoints/
 __pycache__/
 # Ignoring file
 # release after publish paper
 aggregators.py 
+nvflare_demo-main.zip
 # results and test file
+scenario1_alpha_0.png
+CNN_attackers_10.pdf
+MLP_attackers_10.pdf
 CNN_attackers_10%.pdf
 MLP_attackers_10%.pdf
+fashion_CNN_attackers_10.pdf
+fashion_MLP_attackers_10.pdf
+gamma_mean_analize.pdf
+Gamma_value.pdf
+gamma_mean_total_plot.pdf
 run_experiment_0.py
 test_seed.py
 test.py
 print_test.py
+Xchest_test.ipynb
 test.ipynb

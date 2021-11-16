@@ -33,14 +33,17 @@ We decide not to use ADAM
 """
 
 class Server:
-  def __init__(self, model_factory, weight_delta_aggregator, clients_per_round):
+  def __init__(self, model_factory, weight_delta_aggregator, clients_per_round, initialize = None):
     self._weight_delta_aggregator = weight_delta_aggregator
     self._clients_per_round = clients_per_round if clients_per_round == 'all' else int(clients_per_round)
 
     self.model = model_factory()
+    if initialize is not None:
+      self.model = initialize(self.model)
 
-  def train(self, seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
-            optimizer, loss_fn, initial_lr, #last_deltas,
+  def train(self, clients, val_x, val_y, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
+            x_chest: bool, optimizer, loss_fn, initial_lr, 
+            #last_deltas,
             progress_callback):
     if start_round>1:
       old_loss = history[-1][0]
@@ -56,18 +59,14 @@ class Server:
     for r in range(start_round, num_of_rounds):
       selected_clients = clients if self._clients_per_round == 'all' \
         else np.random.choice(clients, self._clients_per_round, replace=False)
-      
-      #np.random.seed(seed+r+1)
-      #tf.random.set_seed(seed+r+1)
-      #random.seed(seed+r+1)
 
-      def decayed_learning_rate(initial_learning_rate, step, decay_steps = 1000, alpha = 0):
+      def cosine_decayed_learning_rate(initial_learning_rate, step, decay_steps = 1000, alpha = 0):
         step = min(step, decay_steps-1)
         cosine_decay = 0.5 * (1 + np.cos( np.pi * step / decay_steps))
         decayed = (1 - alpha) * cosine_decay + alpha
         return initial_learning_rate * decayed
-      if loss_descent or r<np.maximum(num_of_rounds*0.5, 500):
-        lr_decayed = decayed_learning_rate ( initial_learning_rate = initial_lr, step = r + 1)
+      if loss_descent or r<np.maximum(num_of_rounds*0.5, 50 if x_chest else 500):
+        lr_decayed = cosine_decayed_learning_rate ( initial_learning_rate = initial_lr, step = r + 1)
       else:
         lr_decayed = 0.9*lr_decayed
 
@@ -83,20 +82,21 @@ class Server:
       deltas = []
       #moments = []
       #velocs = []
-      #this is for clients ADAM. However, seems like we need to use the aggregate momentent and velocity 
+      #They are for clients ADAM. However, seems like we need to use the aggregate momentent and velocity 
+
       for i, client in enumerate(selected_clients):
         print(f'{expr_basename} round={r + 1}/{num_of_rounds}, client {i + 1}/{self._clients_per_round}',
               end='')
-        delta = client.train(server_weights, lr_decayed, optimizer, loss_fn)
+        delta = client.train(server_weights, lr_decayed, optimizer, loss_fn, val_x, val_y, x_chest)
         #if r > 0:
         #  lms, lvs, delta = zip(*[ Adam(m, v, d, lr_decayed) for m, v, d in zip(last_m[i], last_v[i], delta)])
         #else: 
         #  lms, lvs, delta = zip(*[ Adam(0, 0, d, lr_decayed) for d in delta])
-        #this is for clients ADAM. However, seems like we need to use the aggregate momentent and velocity 
+        #They are for clients ADAM. However, seems like we need to use the aggregate momentent and velocity 
         deltas.append ( delta )
         #moments.append ( lms )
         #velocs.append ( lvs )
-        #this is for clients ADAM. However, seems like we need to use the aggregate momentent and velocity 
+        #They are for clients ADAM. However, seems like we need to use the aggregate momentent and velocity 
 
         if i != len(selected_clients) - 1:
           print('\r', end='')
@@ -165,6 +165,6 @@ class Server:
       
       print(f'{expr_basename} loss: {loss} - accuracy: {acc:.2%}')
       history.append((loss, acc))
-      if (r + 1) % 10 == 0:
+      if (r + 1) % (1 if x_chest else 10) == 0:
         progress_callback(history, server_weights, history_delta_sum)#, last_deltas)
       gc.collect()

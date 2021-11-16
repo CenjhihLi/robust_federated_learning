@@ -58,8 +58,8 @@ def fs_setup(experiment_name, seed, config):
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 """
 def run_experiment(experiment_name, seed, model_factory, input_shape, server_config,
-                   partition_config, dataset, num_of_rounds, threat_model):
-    server = Server(model_factory, **server_config)
+                   partition_config, dataset, num_of_rounds, threat_model, initialize):
+    server = Server(model_factory, **server_config, initialize=initialize)
 
     experiment_dir = fs_setup(experiment_name, seed, {
         # 'model': server.model.get_config(),
@@ -96,6 +96,8 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     np.random.seed(seed)
     tf.random.set_seed(seed)
     random.seed(seed)
+    x_chest = False
+    val_x, val_y = None, None
     if dataset == "emnist":
         """
         Use emnist dataset provided by tff:
@@ -121,10 +123,11 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         Use pneumonia dataset provided by:
         https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia
         """
-        train_data, (test_x, test_y) = pneumonia.load(partition_config, input_shape)
-        optimizer = tf.keras.optimizers.SGD
+        train_data, (val_x, val_y), (test_x, test_y) = pneumonia.load(partition_config, input_shape)
+        optimizer = tf.keras.optimizers.Adam
         loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
-        initial_lr = 5e-5
+        initial_lr = 1e-4
+        x_chest = True
     
     clients = [
         Client(i, data, model_factory)
@@ -139,8 +142,8 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     del train_data, threat_model
     gc.collect()
 
-    server.train(seed, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
-                 optimizer, loss_fn, initial_lr, 
+    server.train(clients, val_x, val_y, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
+                 x_chest, optimizer, loss_fn, initial_lr, 
                  lambda history, server_weights, history_delta_sum: np.savez(expr_file, history=history, 
                     server_weights=server_weights, history_delta_sum=history_delta_sum))
     del server, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, optimizer, loss_fn, initial_lr
@@ -170,7 +173,7 @@ def run_all(experiment, model_factory, input_shape,
             seed, cpr, rounds, mu, sigma, dataset,
             real_alpha, num_samples_per_attacker=1_000_000, attack_type='random',
             t_mean_beta=0.1, real_alpha_as_f=False,
-            gam_max=10, gamma=0.1, geo_max=1000, tol = 1e-7, clients = 20):
+            gam_max=10, gamma=0.1, geo_max=1000, tol = 1e-7, clients = 20, initialize = None):
     if (real_alpha>1) or (real_alpha<0):
         raise ValueError("The proportion of attacker (real_alpha) should be in [0,1]")
     t_mean = partial(trimmed_mean, beta=t_mean_beta)
@@ -191,7 +194,7 @@ def run_all(experiment, model_factory, input_shape,
     geo_mean = partial(geometric_median, max_iter = geo_max, tol = tol)
     geo_mean.__name__ = 'geometric_median'
   
-    weight_delta_aggregators = [r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean, t_mean, median, median, mean]
+    weight_delta_aggregators = [mean, median, r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean, t_mean]
     #weight_delta_aggregators = [r_gam_mean_s, gam_mean_s, geo_mean, t_mean, median, median, mean]
 
     threat_models = [None] if (attack_type is None or real_alpha==0) else [
@@ -213,5 +216,6 @@ def run_all(experiment, model_factory, input_shape,
                         dataset = dataset,
                         partition_config={'#clients': clients, 'mu': mu, 'sigma': sigma},
                         num_of_rounds=rounds,
-                        threat_model=threat_model
+                        threat_model=threat_model,
+                        initialize = initialize
                         )

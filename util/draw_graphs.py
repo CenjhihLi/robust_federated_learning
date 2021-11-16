@@ -35,6 +35,7 @@ def plot_range(experiments, ax, plot_start, plot_end, metric_idx=1, ylim=None, l
     if label_final:
         ax.legend(
             labels=labels,
+            #loc="lower right",
             loc="best",
             )
     if ylim is not None:
