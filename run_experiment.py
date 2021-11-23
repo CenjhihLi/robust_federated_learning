@@ -69,8 +69,15 @@ def res_model_factory():
     model=resnet50.ResNet50(input_shape=(150,150,3), weights='imagenet', include_top=False, )
     x = model.output
     x = keras.layers.Flatten()(x)
-    x = keras.layers.Dense(256,activation='relu')(x)
-    x = keras.layers.Dropout(0.2)(x)
+    x = keras.layers.Dense(512, activation='relu')(x)
+    x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Dropout(0.7, name='dropout1')(x)
+    x = keras.layers.Dense(128, activation='relu')(x)
+    x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Dropout(0.5, name='dropout2')(x)
+    x = keras.layers.Dense(64, activation='relu')(x)
+    x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Dropout(0.3, name='dropout3')(x)
     x = keras.layers.Dense(1,activation='sigmoid')(x)
     for layer in model.layers:
         layer.trainable = False
@@ -93,6 +100,7 @@ def CNN_model_xray():
     x = keras.layers.BatchNormalization(name='bn2')(x)
     x = keras.layers.SeparableConv2D(256, (3,3), activation='relu', padding='same')(x)
     x = keras.layers.MaxPooling2D((2,2), name='pool3')(x)
+    x = tf.keras.layers.Dropout(0.2)(x)
     
     x = keras.layers.SeparableConv2D(512, (3,3), activation='relu', padding='same')(x)
     x = keras.layers.BatchNormalization(name='bn3')(x)
@@ -100,12 +108,18 @@ def CNN_model_xray():
     x = keras.layers.BatchNormalization(name='bn4')(x)
     x = keras.layers.SeparableConv2D(512, (3,3), activation='relu', padding='same')(x)
     x = keras.layers.MaxPooling2D((2,2), name='pool4')(x)
+    x = tf.keras.layers.Dropout(0.2)(x)
     
     x = keras.layers.Flatten(name='flatten')(x)
     x = keras.layers.Dense(1024, activation='relu')(x)
+    x = keras.layers.BatchNormalization()(x)
     x = keras.layers.Dropout(0.7, name='dropout1')(x)
-    x = keras.layers.Dense(512, activation='relu')(x)
+    x = keras.layers.Dense(256, activation='relu')(x)
+    x = keras.layers.BatchNormalization()(x)
     x = keras.layers.Dropout(0.5, name='dropout2')(x)
+    x = keras.layers.Dense(64, activation='relu')(x)
+    x = keras.layers.BatchNormalization()(x)
+    x = keras.layers.Dropout(0.3, name='dropout3')(x)
     x = keras.layers.Dense(1,activation='sigmoid')(x)
     
     model = keras.Model(inputs=input_img, outputs=x)
@@ -115,15 +129,16 @@ if __name__ == '__main__':
     clients=20
     model = mlp_model_factory
     input_shape = [-1]
+    partition_config={'#clients': clients, 'mu': 1.5, 'sigma': 3.45, 'min_value': 0}
     experiment_runner.run_all('expr_no_attacks',
                               model, input_shape=input_shape, dataset='mnist',
-                              seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0,
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0, partition_config=partition_config,
                               t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
     experiment_runner.run_all('expr_random',
                               model, input_shape=input_shape, dataset='mnist', 
-                              seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0.1,
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
                               num_samples_per_attacker=1_000_000, 
                               attack_type='random', t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
@@ -132,26 +147,26 @@ if __name__ == '__main__':
     input_shape=[28,28,1]
     experiment_runner.run_all('cnn_expr_no_attacks',
                               model_factory = model, input_shape=input_shape, dataset='mnist',
-                              seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, 
-                              real_alpha=0, t_mean_beta=0.1, clients=clients,
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0,  partition_config=partition_config,
+                              t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
     experiment_runner.run_all('cnn_expr_random', 
                               model_factory = model, input_shape=input_shape, dataset='mnist',
-                              seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0.1,
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
                               num_samples_per_attacker=1_000_000, 
                               attack_type='random', t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
     experiment_runner.run_all('fashion_mnist_cnn_expr_no_attacks',
                               model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
-                              seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, 
-                              real_alpha=0, t_mean_beta=0.1, clients=clients,
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0,  partition_config=partition_config,
+                              t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
     experiment_runner.run_all('fashion_mnist_cnn_expr_random', 
                               model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
-                              seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0.1,
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
                               num_samples_per_attacker=1_000_000, 
                               attack_type='random', t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
@@ -160,24 +175,22 @@ if __name__ == '__main__':
     input_shape = [-1]
     experiment_runner.run_all('fashion_mnist_expr_no_attacks',
                               model, input_shape=input_shape, dataset='fashion_mnist',
-                              seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0,
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0, partition_config=partition_config,
                               t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
     experiment_runner.run_all('fashion_mnist_expr_random',
                               model, input_shape=input_shape, dataset='fashion_mnist', 
-                              seed=seed, cpr='all', rounds=1000, mu=1.5, sigma=3.45, real_alpha=0.1,
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
                               num_samples_per_attacker=1_000_000, 
                               attack_type='random', t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
-    clients=3
-    #model = res_model_factory()
-    #input_shape = [150,150,3]
-    #initialize = None
+    clients=2
 
     model = CNN_model_xray
     input_shape = [224,224,3]
+    partition_config={'#clients': clients, 'mu': 1.5, 'sigma': 3.45, 'min_value': 512}
     def initialize(model):
         from tensorflow.keras.applications import vgg16
         VGG16_model = vgg16.VGG16(input_shape=(224,224,3), weights='imagenet', include_top=True, )
@@ -194,18 +207,19 @@ if __name__ == '__main__':
         gc.collect()
         return model
 
-    experiment_runner.run_all('pneumonia_expr_no_attacks',
+    experiment_runner.run_all('pneumonia_expr',
                               model, input_shape=input_shape, dataset='pneumonia',
                               #CNN_model_xray, input_shape=[224,224,3], dataset='pneumonia',
-                              seed=seed, cpr='all', rounds=100, mu=1.5, sigma=3.45, real_alpha=0,
-                              t_mean_beta=0.1, clients=clients,
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0, partition_config=partition_config,
+                              epochs=20, t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
-
-    experiment_runner.run_all('pneumonia_expr_random',
-                              model, input_shape=input_shape, dataset='pneumonia', 
+    
+    model = res_model_factory()
+    input_shape = [150,150,3]
+    initialize = None
+    experiment_runner.run_all('pneumonia_expr_resnet',
+                              model, input_shape=input_shape, dataset='pneumonia',
                               #CNN_model_xray, input_shape=[224,224,3], dataset='pneumonia',
-                              seed=seed, cpr='all', rounds=100, mu=1.5, sigma=3.45, real_alpha=0.1,
-                              num_samples_per_attacker=1_000_000, 
-                              attack_type='random', t_mean_beta=0.1, clients=clients,
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0, partition_config=partition_config,
+                              epochs=20, t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
-

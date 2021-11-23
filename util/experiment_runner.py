@@ -20,7 +20,7 @@ from util.client import Client
 from util.server import Server
 #nest_asyncio.apply()
 
-
+test_dict = {'a':1}
 # reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 def fs_setup(experiment_name, seed, config):
     """
@@ -58,7 +58,7 @@ def fs_setup(experiment_name, seed, config):
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 """
 def run_experiment(experiment_name, seed, model_factory, input_shape, server_config,
-                   partition_config, dataset, num_of_rounds, threat_model, initialize):
+                   partition_config, dataset, num_of_rounds, epochs, threat_model, initialize):
     server = Server(model_factory, **server_config, initialize=initialize)
 
     experiment_dir = fs_setup(experiment_name, seed, {
@@ -130,7 +130,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         x_chest = True
     
     clients = [
-        Client(i, data, model_factory)
+        Client(i, data, model_factory, epochs)
         for i, data in enumerate(train_data)
         ]
     if threat_model is not None:
@@ -143,7 +143,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     gc.collect()
 
     server.train(clients, val_x, val_y, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
-                 x_chest, optimizer, loss_fn, initial_lr, 
+                 x_chest, optimizer, loss_fn, initial_lr, experiment_dir,
                  lambda history, server_weights, history_delta_sum: np.savez(expr_file, history=history, 
                     server_weights=server_weights, history_delta_sum=history_delta_sum))
     del server, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, optimizer, loss_fn, initial_lr
@@ -170,8 +170,8 @@ class Threat_model:
                        f'{self.num_samples_per_attacker}')
 
 def run_all(experiment, model_factory, input_shape, 
-            seed, cpr, rounds, mu, sigma, dataset,
-            real_alpha, num_samples_per_attacker=1_000_000, attack_type='random',
+            seed, cpr, rounds, dataset, real_alpha, partition_config,
+            epochs = 1, num_samples_per_attacker=1_000_000, attack_type='random',
             t_mean_beta=0.1, real_alpha_as_f=False,
             gam_max=10, gamma=0.1, geo_max=1000, tol = 1e-7, clients = 20, initialize = None):
     if (real_alpha>1) or (real_alpha<0):
@@ -214,8 +214,9 @@ def run_all(experiment, model_factory, input_shape,
                            'clients_per_round': cpr,
                            },
                         dataset = dataset,
-                        partition_config={'#clients': clients, 'mu': mu, 'sigma': sigma},
+                        partition_config=partition_config,
                         num_of_rounds=rounds,
+                        epochs = epochs,
                         threat_model=threat_model,
                         initialize = initialize
                         )

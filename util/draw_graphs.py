@@ -29,7 +29,7 @@ def plot_range(experiments, ax, plot_start, plot_end, metric_idx=1, ylim=None, l
 
             ax.plot(range(plot_start, min(len(history), plot_end)),
                     history[plot_start:min(len(history), plot_end), metric_idx], label=label, #alpha=alpha, #color=color,# marker=marker,
-                    linestyle=linestyle)
+                    linestyle=linestyle, linewidth = 4)
             labels.append('final: {:.4f}'.format(history[min(len(history), plot_end)-1][1]))
     
     if label_final:

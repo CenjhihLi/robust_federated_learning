@@ -23,6 +23,7 @@ def load(partition_config, input_shape):
       sigma=partition_config['sigma'],
       k=partition_config['#clients'],
       n=x_train.shape[0],
+      min_value = partition_config['min_value'],
     ))
 
   shuffled_ds = list(zip(x_train, y_train))

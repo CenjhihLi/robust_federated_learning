@@ -113,6 +113,7 @@ def load(partition_config, input_shape = [150,150,3], load_train_from_dir = Fals
             sigma=partition_config['sigma'],
             k=partition_config['#clients'],
             n=x_train.shape[0],
+            min_value = partition_config['min_value'],
             ))
 
     shuffled_ds = list(zip(x_train, y_train))
@@ -124,7 +125,7 @@ def load(partition_config, input_shape = [150,150,3], load_train_from_dir = Fals
     val = image_dataset_from_directory(
             val_dir,
             label_mode='binary',
-            batch_size=624,
+            batch_size=16,
             image_size=(input_shape[0], input_shape[1]))
 
     val_x, val_y = tfdataset2array(val)

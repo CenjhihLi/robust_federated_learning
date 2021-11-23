@@ -15,13 +15,6 @@ def clip_value(gradient, clip_norm=1):
   cfactor = np.minimum(np.divide(clip_norm, gnorm) , 1)  if clip else 1
   return np.multiply(gradient, cfactor) if gnorm > clip_norm else gradient
 
-def Adam(lm, lv, d, lr_decayed, beta_1 = 0.9, beta_2 = 0.999, epsilon = 1e-7):
-  g = np.multiply( lr_decayed, d) #since the delta return from clients including lr_decayed factor
-  m = np.divide(np.multiply( beta_1, lm) + np.multiply( 1-beta_1, g), 1 - np.power(beta_1, r+1) ) 
-  v = np.divide(np.multiply( beta_2, lv) + np.multiply( 1-beta_2, np.square(g)), 1 - np.power(beta_2, r+1))  
-  d = np.divide( np.multiply( lr_decayed, m),  np.add( np.sqrt(v), epsilon) )
-  return m, v, d
-
 """
 Server adam records v and m after aggregate
 the problem is that each client may update on different direction
@@ -42,16 +35,25 @@ class Server:
       self.model = initialize(self.model)
 
   def train(self, clients, val_x, val_y, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
-            x_chest: bool, optimizer, loss_fn, initial_lr, 
+            x_chest: bool, optimizer, loss_fn, initial_lr, experiment_dir, 
             #last_deltas,
             progress_callback):
     if start_round>1:
       old_loss = history[-1][0]
-
-    self.model.compile(
-      loss = loss_fn,
-      metrics = ['accuracy']
-    )
+    if x_chest:
+      self.model.compile(
+        loss = loss_fn,
+        metrics = [
+          'accuracy',
+          tf.keras.metrics.Precision(name='precision'),
+          tf.keras.metrics.Recall(name='recall')
+        ]
+        )
+    else:
+      self.model.compile(
+        loss = loss_fn,
+        metrics = ['accuracy']
+        )
 
     loss_descent = True
     server_weights = self.model.get_weights()
@@ -69,6 +71,12 @@ class Server:
         lr_decayed = cosine_decayed_learning_rate ( initial_learning_rate = initial_lr, step = r + 1)
       else:
         lr_decayed = 0.9*lr_decayed
+      def Adam(lm, lv, d, lr_decayed, beta_1 = 0.9, beta_2 = 0.999, epsilon = 1e-7):
+        g = np.multiply( lr_decayed, d) #since the delta return from clients including lr_decayed factor
+        m = np.divide(np.multiply( beta_1, lm) + np.multiply( 1-beta_1, g), 1 - np.power(beta_1, r+1) ) 
+        v = np.divide(np.multiply( beta_2, lv) + np.multiply( 1-beta_2, np.square(g)), 1 - np.power(beta_2, r+1))  
+        d = np.divide( np.multiply( lr_decayed, m),  np.add( np.sqrt(v), epsilon) )
+        return m, v, d
 
       """
       if r>0:
@@ -83,11 +91,11 @@ class Server:
       #moments = []
       #velocs = []
       #They are for clients ADAM. However, seems like we need to use the aggregate momentent and velocity 
-
+      chkpt_path = experiment_dir/'best_model'
       for i, client in enumerate(selected_clients):
         print(f'{expr_basename} round={r + 1}/{num_of_rounds}, client {i + 1}/{self._clients_per_round}',
               end='')
-        delta = client.train(server_weights, lr_decayed, optimizer, loss_fn, val_x, val_y, x_chest)
+        delta = client.train(server_weights, lr_decayed, optimizer, loss_fn, val_x, val_y, x_chest, chkpt_path)
         #if r > 0:
         #  lms, lvs, delta = zip(*[ Adam(m, v, d, lr_decayed) for m, v, d in zip(last_m[i], last_v[i], delta)])
         #else: 
@@ -152,12 +160,18 @@ class Server:
         #                  for i, w in enumerate(server_weights)]
       
       self.model.set_weights(server_weights)
-      loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
+      if x_chest:
+        loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0, batch_size = 16)
+      else:
+        loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
       if r>=np.maximum(num_of_rounds*0.5, 500):
         if loss > old_loss: #need to find some way to avoid going into local minimum
           self.model.set_weights(old_server_weights)
           server_weights = old_server_weights
-          loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
+          if x_chest:
+            loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0, batch_size = 16)
+          else:
+            loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
           loss_descent=False
         else:
           loss_descent=True

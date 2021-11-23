@@ -10,10 +10,12 @@ not sure now
 
 import numpy as np
 import tensorflow as tf
+from prepare_data.transform import tfdataset2array
+from tensorflow.keras.callbacks import ModelCheckpoint, Callback, EarlyStopping
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 class Client():
-  def __init__(self, idx, data, model_factory):
+  def __init__(self, idx, data, model_factory, epochs):
     self.idx = idx
 
     self.attacker = False
@@ -24,6 +26,7 @@ class Client():
     self._x, self._y = data[0], data[1]
 
     self._model = model_factory()
+    self._epochs = epochs
 
   def as_attacker(self, threat_model):
     self.attacker = True
@@ -34,7 +37,7 @@ class Client():
 
     self.num_of_samples = self.threat_model.num_samples_per_attacker
 
-  def train(self, server_weights, lr_decayed, optimizer, loss_fn, val_x, val_y, x_chest: bool):
+  def train(self, server_weights, lr_decayed, optimizer, loss_fn, val_x, val_y, x_chest: bool, chkpt_path):
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'delta_to_zero':
       return [-_ for _ in server_weights]
       
@@ -47,24 +50,35 @@ class Client():
         #optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ), 
         optimizer = optimizer( learning_rate = lr_decayed, decay = 1e-5),
         loss = loss_fn,
-        metrics = ['accuracy'],
+        metrics = [
+          'accuracy',
+          tf.keras.metrics.Precision(name='precision'),
+          tf.keras.metrics.Recall(name='recall')
+          ],
       )
-      datagen = ImageDataGenerator(
-        rescale=1./255,
-        horizontal_flip=True,
-        rotation_range=0.2,
-        brightness_range=(1.2,1.5),
+      #datagen = ImageDataGenerator(
+      #  rescale=1./255,
+      #  horizontal_flip=True,
+      #  rotation_range=0.2,
+      #  brightness_range=(1.2,1.5),
+      #  )
+      #train_generator = datagen.flow((self._x, self._y),
+      #  batch_size=16,
+      #  )
+      es = EarlyStopping(patience=5)
+      chkpt_path = chkpt_path / f'client{self.idx}'
+      chkpt_path.mkdir(parents=True, exist_ok=True)
+      chkpt = ModelCheckpoint(filepath=chkpt_path/'model', save_best_only=True, save_weights_only=True)
+      self._model.fit(
+        #train_generator,
+        self._x, self._y,
+        batch_size = 16,
+        steps_per_epoch = np.maximum(self.num_of_samples//16, 1),
+        epochs = self._epochs,
+        validation_data =(val_x, val_y),
+        callbacks = [es, chkpt],
+        class_weight = {0:1.0, 1:0.4},
         )
-      train_generator = datagen.flow((self._x, self._y),
-        batch_size=16,
-        )
-      
-      self._model.fit(train_generator,
-                      steps_per_epoch= self.num_of_samples//16,
-                      epochs=20,
-                      validation_data=(val_x, val_y),
-                      class_weight={0:1.0, 1:0.4},
-                      )
     else:
       #Since local machine do not have last update v and only iterate once, Adam is not work here, should employ Adam in server
       self._model.compile(
@@ -72,10 +86,10 @@ class Client():
         optimizer = optimizer( learning_rate = lr_decayed ),
         loss = loss_fn,
       )
-      self._model.fit(self._x, self._y, verbose=0,
-                      epochs=1, steps_per_epoch=1,
+      self._model.fit(self._x, self._y, verbose = 0,
+                      epochs = self._epochs, steps_per_epoch = 1,
                       # go over 10% of data like in Yin's paper
-                      batch_size=max((self.num_of_samples // 10), 1), 
+                      batch_size = max((self.num_of_samples // 10), 1), 
                       # epochs=3, batch_size=50,
                       #                         callbacks=[tf.keras.callbacks.EarlyStopping(
                       #                             monitor='loss', patience=1, restore_best_weights=True)]
