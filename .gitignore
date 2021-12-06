@@ -4,6 +4,7 @@ __pycache__/
 experiments/
 plot/
 prepare_data/CellData/
+prepare_data/RSNA_Pneumonia_Detection_Challenge/
 .ipynb_checkpoints/
 __pycache__/
 # Ignoring file
@@ -25,5 +26,5 @@ run_experiment_0.py
 test_seed.py
 test.py
 print_test.py
-Xchest_test.ipynb
+# Xchest_test.ipynb
 test.ipynb

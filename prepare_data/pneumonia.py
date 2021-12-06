@@ -44,8 +44,6 @@ def load_data(path):
 
     # Shuffle the data 
     data = data.sample(frac=1.).reset_index(drop=True)
-
-    # How the dataframe looks like?
     return data
     
 def load_img(path, input_shape = (224,224)):
@@ -82,7 +80,7 @@ def load_img(path, input_shape = (224,224)):
         img_data.append(img)
         img_labels.append(label)
     
-    return np.array(img_data), np.array(img_labels).astype(np.float32)
+    return np.array(img_data).astype(np.float32), np.array(img_labels).astype(np.float32)
 
 def load(partition_config, input_shape = [150,150,3], load_train_from_dir = False):
     """

@@ -1,17 +1,16 @@
+`for anaconda:`
+
 conda create --name federated python=3.8
-conda install cudatoolkit=10.1
-conda install cudnn=7.6
-
-conda install matplotlib~=3.4.0
-conda install tensorflow=2.3
-
-pip install wquantiles=0.6
-pip install nest_asyncio
-pip install tensorflow-federated=0.17.0
 python -m pip install -U setuptools pip
-pip install cupy-cuda101
 pip install --upgrade git+https://github.com/MedMNIST/MedMNIST.git
 
-conda install opencv
-conda install pandas
-pip install imgaug
+conda install cudatoolkit=10.1 cudnn=7.6 matplotlib~=3.4.0 tensorflow=2.3 opencv pandas
+pip install wquantiles==0.6 nest_asyncio tensorflow-federated==0.17.0 imgaug mlxtend cupy-cuda101
+
+
+
+`for docker:`
+
+sudo docker run -it --rm -p 8897:8888 -v ./robust_federated_learning/:/mount/src -w /mount/src --gpus '"device=0,1,2,3,4,5,6,7"' nvcr.io/nvidia/tensorflow:21.09-tf2-py3
+python -m pip install -U setuptools pip
+pip install matplotlib~=3.4.0 wquantiles==0.6 nest_asyncio tensorflow-federated imgaug opencv-python-headless pandas mlxtend

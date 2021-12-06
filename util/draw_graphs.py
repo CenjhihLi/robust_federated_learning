@@ -7,21 +7,8 @@ import numpy as np
 plt.style.use('seaborn-paper')
 
 def plot_range(experiments, ax, plot_start, plot_end, metric_idx=1, ylim=None, label_final=False):
-#     if metric_idx == 1:
-#         ax.yaxis.set_major_formatter(FuncFormatter(lambda y, _: '{:.0%}'.format(y)))
-#         ax.set_ylabel('Accuracy')
-#     else:
-#         ax.set_ylabel('Loss')
-        
-#     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     labels = []
     for path, label, alpha, linestyle in experiments:
-#         if alpha == 1:
-#             marker = 'P'
-#         elif alpha == 0.8:
-#             marker = '^'
-#         else:
-#             marker = 'd'
             
         if Path(f'{path}.npz').is_file():
             history = np.load(f'{path}.npz')['history']

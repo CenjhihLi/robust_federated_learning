@@ -2,10 +2,6 @@
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 
 add random attack
-The author use a object dataset for the class threat_model
-
-Maybe change this class since we might only need attack type
-not sure now
 """
 
 import numpy as np
@@ -31,15 +27,15 @@ class Client():
   def as_attacker(self, threat_model):
     self.attacker = True
     self.threat_model = threat_model
-
+    
     if self.threat_model.type == 'y_flip':
-      self._y = 9 - self._y
-
+      self._y = 9 - self._y #not use
+    
     self.num_of_samples = self.threat_model.num_samples_per_attacker
 
   def train(self, server_weights, lr_decayed, optimizer, loss_fn, val_x, val_y, x_chest: bool, chkpt_path):
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'delta_to_zero':
-      return [-_ for _ in server_weights]
+      return [-_ for _ in server_weights] #not use
       
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'random':
       return [np.random.normal(size = _.shape) for _ in server_weights]
@@ -77,7 +73,7 @@ class Client():
         epochs = self._epochs,
         validation_data =(val_x, val_y),
         callbacks = [es, chkpt],
-        class_weight = {0:1.0, 1:0.4},
+        class_weight = {0:1.0, 1:0.35},
         )
     else:
       #Since local machine do not have last update v and only iterate once, Adam is not work here, should employ Adam in server
@@ -100,6 +96,6 @@ class Client():
     delta_weights = [new_w - old_w for new_w, old_w in zip(new_weights, server_weights)]
 
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'sign_flip':
-      return [-t for t in delta_weights]
+      return [-t for t in delta_weights] #not use
     else:
       return delta_weights

@@ -20,7 +20,7 @@ from util.client import Client
 from util.server import Server
 #nest_asyncio.apply()
 
-test_dict = {'a':1}
+
 # reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 def fs_setup(experiment_name, seed, config):
     """
@@ -133,10 +133,12 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         Client(i, data, model_factory, epochs)
         for i, data in enumerate(train_data)
         ]
+    print('Sample size of all clients = {}'.format([client.num_of_samples for client in clients]))
     if threat_model is not None:
         attackers = np.random.choice(clients, int(
             len(clients) * threat_model.real_alpha) if threat_model.real_alpha is not None else threat_model.f, replace=False)
         for client in attackers:
+            print('Client id = {}, sample size = {}'.format(client.idx, client.num_of_samples))
             client.as_attacker(threat_model)
 
     del train_data, threat_model
@@ -153,7 +155,6 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     #             lambda history, server_weights, history_delta_sum, last_deltas: np.savez(expr_file, history=history, 
     #                server_weights=server_weights, history_delta_sum=history_delta_sum, last_deltas = last_deltas))
     #for adam
-
 
 @dataclass(frozen=True)
 class Threat_model:
@@ -194,7 +195,8 @@ def run_all(experiment, model_factory, input_shape,
     geo_mean = partial(geometric_median, max_iter = geo_max, tol = tol)
     geo_mean.__name__ = 'geometric_median'
   
-    weight_delta_aggregators = [mean, median, r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean, t_mean]
+    weight_delta_aggregators = [mean, median, r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean] if dataset == 'pneumonia' else\
+        [mean, median, r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean, t_mean]
     #weight_delta_aggregators = [r_gam_mean_s, gam_mean_s, geo_mean, t_mean, median, median, mean]
 
     threat_models = [None] if (attack_type is None or real_alpha==0) else [

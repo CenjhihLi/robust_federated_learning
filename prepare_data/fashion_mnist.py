@@ -1,11 +1,8 @@
 #reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 import random
-
 import numpy as np
 import tensorflow as tf
-
 from prepare_data.partition_v2 import Partition, PartitionParams
-
 
 def load(partition_config, input_shape):
   (x_train, y_train), (x_test, y_test) = [

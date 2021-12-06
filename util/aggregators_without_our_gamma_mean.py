@@ -1,7 +1,7 @@
 """
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 functions: mean, coordinatewise, quantile, median, trimmed_mean_1d, trimmed_mean(line78)
-we write our trimmed_mean since the original one is  a bit too slow
+we write our trimmed_mean since the original one is a bit too slow
 
 Author: Cen-Jhih Li
 Belongs: Academia Sinica, Institute of Statistical Science, Robust federated learning project
@@ -20,16 +20,16 @@ from scipy.linalg import svd
 
 
 # reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
-def mean(points, weights):
+def mean(points, weights=None):
     return np.average(points, axis=0, weights=weights)#.astype(points.dtype)
 
 
-def std(points, weights):
+def std(points, weights=None):
     mu = mean(points, weights)
     return np.sqrt(mean(np.subtract(points, mu)**2, weights))
 
 
-def cov(points, weights):
+def cov(points, weights=None):
     """
     points.shape = (m, p=[...])
     cov.shape should be (p, p)
@@ -51,10 +51,10 @@ def cov(points, weights):
 #        res[index] = fn(coordinates, weights)
 #    return res
 """
-Too slow in parameter for loop
+Too slow in 'parameters' for-loop
 """
 
-def coordinatewise(fn, points, weights):
+def coordinatewise(fn, points, weights=None):
     if len(points) == 1:
         return fn(points, weights)
     shape = np.shape(points[0])
@@ -62,11 +62,13 @@ def coordinatewise(fn, points, weights):
     return np.transpose(list(map(lambda x: fn(x, weights), points))).reshape(shape)
     #return np.transpose([fn(v, weights) for v in points]).reshape(shape)
 
+
 # reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 def quantile(points, weights = None, quantile = 0.5):
     if weights is None:
         return np.quantile(points, quantile, axis=0).astype(np.float32)
     return coordinatewise(partial(w.quantile_1D, quantile=quantile), points, weights)
+
 
 # reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 def median(points, weights = None):
@@ -104,15 +106,17 @@ def trimmed_mean(points, weights, beta):
 """
 
 """
-Too slow in parameter for-loop in coordinatewise
+Too slow in 'parameters' for-loop in coordinatewise
 use below
 """
 
 def trimmed_mean(points, weights=None, beta = 0.1):
   shape = np.shape(points[0])
   points = np.asarray([np.reshape(p, [-1]) for p in points])
-  low = np.quantile(points, beta, axis=0) if weights is None else coordinatewise(partial(w.quantile_1D, quantile=beta), points, weights)
-  high = np.quantile(points, 1-beta, axis=0)  if weights is None else coordinatewise(partial(w.quantile_1D, quantile=1-beta), points, weights)
+  low = np.quantile(points, beta, axis=0) if weights is None \
+      else coordinatewise(partial(w.quantile_1D, quantile=beta), points, weights)
+  high = np.quantile(points, 1-beta, axis=0)  if weights is None \
+      else coordinatewise(partial(w.quantile_1D, quantile=1-beta), points, weights)
 
   mask=np.multiply(points > low, points < high)  
   mu = (low+high)/2.0
@@ -166,7 +170,6 @@ def ext_remove(points, weights=None, beta=0.1):
             new_points.append(p)
             new_weights.append(ws)
     return new_points, new_weights
-
 
 def gamma_mean_1D(points, weights=None, history_points=None, gamma = 0.1, max_iter=10, tol = 1e-7, remove=False, beta=0.1):
     """

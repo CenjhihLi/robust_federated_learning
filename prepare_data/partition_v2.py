@@ -5,7 +5,6 @@ from typing import Sequence, Callable
 import numpy as np
 import matplotlib.pyplot as plt
 
-
 @dataclass(frozen=True)
 class PartitionParams:
   mu: float = 1.5
@@ -13,7 +12,6 @@ class PartitionParams:
   k: int = 100
   n: int = 60000
   min_value: int = 0
-
 
 @dataclass(frozen=True)
 class Partition:

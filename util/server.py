@@ -16,10 +16,10 @@ def clip_value(gradient, clip_norm=1):
   return np.multiply(gradient, cfactor) if gnorm > clip_norm else gradient
 
 """
-Server adam records v and m after aggregate
+Server adam records 'v' and 'm' after aggregate
 the problem is that each client may update on different direction
 
-Client adam records vs and ms before aggregate
+Client adam records 'vs' and 'ms' before aggregate
 However, the model update on global direction
 
 We decide not to use ADAM
@@ -91,7 +91,7 @@ class Server:
       #moments = []
       #velocs = []
       #They are for clients ADAM. However, seems like we need to use the aggregate momentent and velocity 
-      chkpt_path = experiment_dir/'best_model'
+      chkpt_path = experiment_dir/self._weight_delta_aggregator.__name__
       for i, client in enumerate(selected_clients):
         print(f'{expr_basename} round={r + 1}/{num_of_rounds}, client {i + 1}/{self._clients_per_round}',
               end='')
@@ -164,7 +164,8 @@ class Server:
         loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0, batch_size = 16)
       else:
         loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
-      if r>=np.maximum(num_of_rounds*0.5, 500):
+      loss_detect = 1 if x_chest else np.maximum(num_of_rounds*0.5, 500)
+      if r>=loss_detect:
         if loss > old_loss: #need to find some way to avoid going into local minimum
           self.model.set_weights(old_server_weights)
           server_weights = old_server_weights
@@ -176,8 +177,10 @@ class Server:
         else:
           loss_descent=True
       old_loss = loss
-      
-      print(f'{expr_basename} loss: {loss} - accuracy: {acc:.2%}')
+      if x_chest:
+        print(f'{expr_basename} loss: {loss} - accuracy: {acc:.4%} - precision: {precision:.4%} - recall: {recall:.4%}')
+      else:
+        print(f'{expr_basename} loss: {loss} - accuracy: {acc:.4%}')
       history.append((loss, acc))
       if (r + 1) % (1 if x_chest else 10) == 0:
         progress_callback(history, server_weights, history_delta_sum)#, last_deltas)
