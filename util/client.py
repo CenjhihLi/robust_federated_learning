@@ -33,12 +33,28 @@ class Client():
     
     self.num_of_samples = self.threat_model.num_samples_per_attacker
 
-  def train(self, server_weights, lr_decayed, optimizer, loss_fn, val_x, val_y, x_chest: bool, chkpt_path):
+  def train(self, server_weights, lr_decayed, optimizer, loss_fn, metrics, val_x, val_y, x_chest: bool, chkpt_path):   
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'delta_to_zero':
-      return [-_ for _ in server_weights] #not use
+      return_deltas = list()
+      for i, layer in enumerate(self._model.layers):
+        weights = layer.get_weights()
+        for weight in weights:
+          if layer.trainable:
+            return_deltas.append( -weight )
+          else: 
+            return_deltas.append( np.zeros(shape = weight.shape, dtype = np.float32) )
+      return return_deltas #not use
       
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'random':
-      return [np.random.normal(size = _.shape) for _ in server_weights]
+      return_deltas = list()
+      for _, layer in enumerate(self._model.layers):
+        weights = layer.get_weights()
+        for weight in weights:
+          if layer.trainable:
+            return_deltas.append( np.random.normal(size = weight.shape) )
+          else: 
+            return_deltas.append( np.zeros(shape = weight.shape, dtype = np.float32) )
+      return return_deltas
 
     self._model.set_weights(server_weights)
     if x_chest:
@@ -46,11 +62,11 @@ class Client():
         #optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ), 
         optimizer = optimizer( learning_rate = lr_decayed, decay = 1e-5),
         loss = loss_fn,
+        #metrics = metrics,
         metrics = [
-          'accuracy',
-          tf.keras.metrics.Precision(name='precision'),
-          tf.keras.metrics.Recall(name='recall')
-          ],
+            tf.keras.metrics.Precision(name='precision'),
+            tf.keras.metrics.Recall(name='recall')
+        ],
       )
       #datagen = ImageDataGenerator(
       #  rescale=1./255,
@@ -78,9 +94,10 @@ class Client():
     else:
       #Since local machine do not have last update v and only iterate once, Adam is not work here, should employ Adam in server
       self._model.compile(
-        #optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ), 
-        optimizer = optimizer( learning_rate = lr_decayed ),
-        loss = loss_fn,
+          #optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ), 
+          optimizer = optimizer( learning_rate = lr_decayed ),
+          loss = loss_fn,
+          metrics = metrics,
       )
       self._model.fit(self._x, self._y, verbose = 0,
                       epochs = self._epochs, steps_per_epoch = 1,

@@ -35,25 +35,15 @@ class Server:
       self.model = initialize(self.model)
 
   def train(self, clients, val_x, val_y, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
-            x_chest: bool, optimizer, loss_fn, initial_lr, experiment_dir, 
+            x_chest: bool, optimizer, loss_fn, metrics, initial_lr, experiment_dir, 
             #last_deltas,
             progress_callback):
     if start_round>1:
       old_loss = history[-1][0]
-    if x_chest:
-      self.model.compile(
+    self.model.compile(
         loss = loss_fn,
-        metrics = [
-          'accuracy',
-          tf.keras.metrics.Precision(name='precision'),
-          tf.keras.metrics.Recall(name='recall')
-        ]
-        )
-    else:
-      self.model.compile(
-        loss = loss_fn,
-        metrics = ['accuracy']
-        )
+        metrics = metrics
+    )
 
     loss_descent = True
     server_weights = self.model.get_weights()
@@ -95,7 +85,7 @@ class Server:
       for i, client in enumerate(selected_clients):
         print(f'{expr_basename} round={r + 1}/{num_of_rounds}, client {i + 1}/{self._clients_per_round}',
               end='')
-        delta = client.train(server_weights, lr_decayed, optimizer, loss_fn, val_x, val_y, x_chest, chkpt_path)
+        delta = client.train(server_weights, lr_decayed, optimizer, loss_fn, metrics, val_x, val_y, x_chest, chkpt_path)
         #if r > 0:
         #  lms, lvs, delta = zip(*[ Adam(m, v, d, lr_decayed) for m, v, d in zip(last_m[i], last_v[i], delta)])
         #else: 
@@ -141,6 +131,7 @@ class Server:
       last_deltas = [last_m, last_v]
       """
       old_server_weights = server_weights
+      #@TODO: Only need to update trainable parameters
       if 'record_gamma_mean_' in self._weight_delta_aggregator.__name__:
         server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])
                         for i, w in enumerate(server_weights)]
@@ -158,10 +149,10 @@ class Server:
         #                  for i, w in enumerate(server_weights)]
         #server_weights = [w + np.multiply(lr_decayed, clip_value(self._weight_delta_aggregator([d[i] for d in deltas], importance_weights)))
         #                  for i, w in enumerate(server_weights)]
-      
       self.model.set_weights(server_weights)
       if x_chest:
         loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0, batch_size = 16)
+        #loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0)
       else:
         loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
       loss_detect = 1 if x_chest else np.maximum(num_of_rounds*0.5, 500)
@@ -171,6 +162,7 @@ class Server:
           server_weights = old_server_weights
           if x_chest:
             loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0, batch_size = 16)
+            #loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0)
           else:
             loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
           loss_descent=False

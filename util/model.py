@@ -25,22 +25,19 @@ def cnn_model_factory():
         keras.layers.Dense(10, activation='softmax')
         ])
 
-def cnn2_model_factory():
+def LeNet_model_factory():
     return keras.models.Sequential([
-        keras.layers.Conv2D(filters=32, kernel_size=3, 
-                            input_shape=(28, 28, 1), activation='relu', 
-                            padding='same'),
-        keras.layers.MaxPool2D(pool_size=2),
-        keras.layers.Conv2D(filters=64, kernel_size=3, 
+        keras.layers.Conv2D(filters=20, kernel_size=5, 
+                            input_shape=(28, 28, 1), 
+                            activation='relu'),
+        keras.layers.MaxPool2D(pool_size=2, strides = 2, padding='same'),
+        keras.layers.Conv2D(filters=50, kernel_size=5, 
                             activation='relu', 
                             padding='same'),
-        keras.layers.MaxPool2D(pool_size=2),
-        keras.layers.Conv2D(filters=128, kernel_size=3, 
-                            activation='relu', 
-                            padding='same'),
+        keras.layers.MaxPool2D(pool_size=2, strides = 2, padding='same'),
         keras.layers.Flatten(),
-        keras.layers.Dense(128, activation='relu'),
-        keras.layers.Dropout(0.2),
+        keras.layers.Dense(500, activation='relu'),
+        keras.layers.Dropout(0.25),
         keras.layers.Dense(10, activation='softmax')
         ])
 #seems not better

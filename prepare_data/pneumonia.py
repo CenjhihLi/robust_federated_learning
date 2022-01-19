@@ -82,7 +82,7 @@ def load_img(path, input_shape = (224,224)):
     
     return np.array(img_data).astype(np.float32), np.array(img_labels).astype(np.float32)
 
-def load(partition_config, input_shape = [150,150,3], load_train_from_dir = False):
+def load(partition_config, input_shape = [150,150,3], load_train_from_dir = False, self_split_val: bool=False):
     """
     training data shape: (#observations, #pixels=[150,150,3])
     testing data shape: (#observations, #pixels=[150,150,3])
@@ -105,6 +105,28 @@ def load(partition_config, input_shape = [150,150,3], load_train_from_dir = Fals
     y_train = y_train.squeeze(0).astype(np.float32).reshape( (-1,) )
     #y_train = tf.reshape(y_train ,[-1,1])
 
+    val = image_dataset_from_directory(
+            val_dir,
+            label_mode='binary',
+            batch_size=16,
+            image_size=(input_shape[0], input_shape[1]))
+
+    val_x, val_y = tfdataset2array(val)
+    val_x = np.divide(tf.reshape(val_x[0], [val_x[0].shape[0]] + input_shape), 255., dtype=np.float32)
+    val_y = val_y.squeeze(0).astype(np.float32).reshape( (-1,) )
+    #val_y = tf.reshape(val_y,[-1,1])
+
+    if self_split_val:
+        x_train = np.concatenate((x_train, val_x), axis = 0)
+        y_train = np.concatenate((y_train, val_y), axis = 0)
+        shuffled = np.random.permutation(5232)
+        val_x = x_train[shuffled,...][:int(5232*0.1):,...]
+        val_y = y_train[shuffled,...][:int(5232*0.1):,...]
+        x_train = x_train[shuffled,...][int(5232*0.1):,...]
+        y_train = y_train[shuffled,...][int(5232*0.1):,...]
+        del shuffled
+        gc.collect()
+
     partition = Partition.random_log_normal_partition(
     PartitionParams(
             mu=partition_config['mu'],
@@ -119,17 +141,6 @@ def load(partition_config, input_shape = [150,150,3], load_train_from_dir = Fals
     x_train, y_train = zip(*shuffled_ds)
 
     partitioned_x_train, partitioned_y_train = [partition.fn(data) for data in (x_train, y_train)]
-
-    val = image_dataset_from_directory(
-            val_dir,
-            label_mode='binary',
-            batch_size=16,
-            image_size=(input_shape[0], input_shape[1]))
-
-    val_x, val_y = tfdataset2array(val)
-    val_x = np.divide(tf.reshape(val_x[0], [val_x[0].shape[0]] + input_shape), 255., dtype=np.float32)
-    val_y = val_y.squeeze(0).astype(np.float32).reshape( (-1,) )
-    #val_y = tf.reshape(val_y,[-1,1])
 
     test = image_dataset_from_directory(
             test_dir,

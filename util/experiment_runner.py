@@ -58,7 +58,7 @@ def fs_setup(experiment_name, seed, config):
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 """
 def run_experiment(experiment_name, seed, model_factory, input_shape, server_config,
-                   partition_config, dataset, num_of_rounds, epochs, threat_model, initialize):
+                   partition_config, dataset, self_split_val: bool, num_of_rounds, epochs, threat_model, initialize):
     server = Server(model_factory, **server_config, initialize=initialize)
 
     experiment_dir = fs_setup(experiment_name, seed, {
@@ -107,25 +107,33 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
                                                   reshape = input_shape)
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
+        metrics = ['accuracy',]
         initial_lr = 5e-2
     elif dataset == "mnist":
         train_data, (test_x, test_y) = mnist.load(partition_config, input_shape) 
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
+        metrics = ['accuracy',]
         initial_lr = 1e-1
     elif dataset == "fashion_mnist":
         train_data, (test_x, test_y) = fashion_mnist.load(partition_config, input_shape)
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
+        metrics = ['accuracy',]
         initial_lr = 5e-2
     elif dataset == "pneumonia":
         """
         Use pneumonia dataset provided by:
         https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia
         """
-        train_data, (val_x, val_y), (test_x, test_y) = pneumonia.load(partition_config, input_shape)
+        train_data, (val_x, val_y), (test_x, test_y) = pneumonia.load(partition_config, input_shape, self_split_val = self_split_val)
         optimizer = tf.keras.optimizers.Adam
         loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)
+        metrics = [
+            'accuracy',
+            tf.keras.metrics.Precision(name='precision'),
+            tf.keras.metrics.Recall(name='recall')
+        ]
         initial_lr = 1e-4
         x_chest = True
     
@@ -145,7 +153,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     gc.collect()
 
     server.train(clients, val_x, val_y, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
-                 x_chest, optimizer, loss_fn, initial_lr, experiment_dir,
+                 x_chest, optimizer, loss_fn, metrics, initial_lr, experiment_dir,
                  lambda history, server_weights, history_delta_sum: np.savez(expr_file, history=history, 
                     server_weights=server_weights, history_delta_sum=history_delta_sum))
     del server, clients, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum, optimizer, loss_fn, initial_lr
@@ -169,14 +177,9 @@ class Threat_model:
                        f'_b_{self.type}_'
                        f'{int(self.real_alpha * 100) if self.real_alpha is not None else "f" + str(self.f)}_'
                        f'{self.num_samples_per_attacker}')
-
-def run_all(experiment, model_factory, input_shape, 
-            seed, cpr, rounds, dataset, real_alpha, partition_config,
-            epochs = 1, num_samples_per_attacker=1_000_000, attack_type='random',
-            t_mean_beta=0.1, real_alpha_as_f=False,
-            gam_max=10, gamma=0.1, geo_max=1000, tol = 1e-7, clients = 20, initialize = None):
-    if (real_alpha>1) or (real_alpha<0):
-        raise ValueError("The proportion of attacker (real_alpha) should be in [0,1]")
+def make_method_list(method_list=None, t_mean_beta=0.1,gam_max=10, gamma=0.1,geo_max=1000, tol = 1e-7,):
+    if method_list is None:
+        method_list = 'all'
     t_mean = partial(trimmed_mean, beta=t_mean_beta)
     t_mean.__name__ = f't_mean_{int(t_mean_beta * 100)}'
     
@@ -191,14 +194,59 @@ def run_all(experiment, model_factory, input_shape,
   
     gam_mean = partial(gamma_mean, gamma = gamma, max_iter=gam_max, tol = tol)
     gam_mean.__name__ = 'gamma_mean_{}'.format(str(gamma).replace(".","_"))
+    
+    #median initial
+    gam_mean_s_median = partial(gamma_mean, gamma = gamma, max_iter=gam_max, tol = tol, compute='simple', initial = 'median')
+    gam_mean_s_median.__name__ = 'simple_gamma_mean_{}_median'.format(str(gamma).replace(".","_"))
+  
+    gam_mean_median = partial(gamma_mean, gamma = gamma, max_iter=gam_max, tol = tol, initial = 'median')
+    gam_mean_median.__name__ = 'gamma_mean_{}_median'.format(str(gamma).replace(".","_"))
   
     geo_mean = partial(geometric_median, max_iter = geo_max, tol = tol)
     geo_mean.__name__ = 'geometric_median'
-  
-    weight_delta_aggregators = [mean, median, r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean] if dataset == 'pneumonia' else\
-        [mean, median, r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean, t_mean]
-    #weight_delta_aggregators = [r_gam_mean_s, gam_mean_s, geo_mean, t_mean, median, median, mean]
 
+    if method_list == 'all':
+        weight_delta_aggregators = [mean, median, r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean, t_mean]
+    else:
+        weight_delta_aggregators = list()
+        for method in method_list:
+            if method == 'mean':
+                weight_delta_aggregators.append(mean)
+            elif method == 'median':
+                weight_delta_aggregators.append(median)
+            elif method == 'r_gam_mean_s':
+                weight_delta_aggregators.append(r_gam_mean_s)
+            elif method == 'r_gam_mean':
+                weight_delta_aggregators.append(r_gam_mean)
+            elif method == 'gam_mean_s':
+                weight_delta_aggregators.append(gam_mean_s)
+            elif method == 'gam_mean':
+                weight_delta_aggregators.append(gam_mean)
+            elif method == 'gam_mean_s_median':
+                weight_delta_aggregators.append(gam_mean_s_median)
+            elif method == 'gam_mean_median':
+                weight_delta_aggregators.append(gam_mean_median)
+            elif method == 'geo_mean':
+                weight_delta_aggregators.append(geo_mean)
+            elif method == 't_mean':
+                weight_delta_aggregators.append(t_mean)
+            else:
+                print('Do not support {} method'.format(method))
+    return weight_delta_aggregators            
+
+def run_all(experiment, model_factory, input_shape, 
+            seed, cpr, rounds, dataset, real_alpha, partition_config,
+            epochs = 1, num_samples_per_attacker=1_000_000, attack_type='random',
+            method_list=None, t_mean_beta=0.1, real_alpha_as_f=False, self_split_val: bool=False,
+            gam_max=10, gamma=0.1, geo_max=1000, tol = 1e-7, clients = 20, initialize = None):
+    if (real_alpha>1) or (real_alpha<0):
+        raise ValueError("The proportion of attacker (real_alpha) should be in [0,1]")
+    if method_list is None:
+        method_list = 'all'
+        
+    weight_delta_aggregators = make_method_list(method_list = method_list, t_mean_beta=t_mean_beta,\
+        gam_max=gam_max, gamma=gamma, geo_max=geo_max, tol = tol,)
+    
     threat_models = [None] if (attack_type is None or real_alpha==0) else [
         Threat_model(type=attack_type, num_samples_per_attacker=num_samples_per_attacker,
                      f=real_alpha) if real_alpha_as_f else Threat_model(type=attack_type,
@@ -215,7 +263,8 @@ def run_all(experiment, model_factory, input_shape,
                            'weight_delta_aggregator': wda,
                            'clients_per_round': cpr,
                            },
-                        dataset = dataset,
+                        dataset = dataset, 
+                        self_split_val = self_split_val,
                         partition_config=partition_config,
                         num_of_rounds=rounds,
                         epochs = epochs,
