@@ -18,8 +18,6 @@ import prepare_data.fashion_mnist as fashion_mnist
 import prepare_data.pneumonia as pneumonia
 from util.client import Client
 from util.server import Server
-#nest_asyncio.apply()
-
 
 # reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 def fs_setup(experiment_name, seed, config):
@@ -52,7 +50,6 @@ def fs_setup(experiment_name, seed, config):
     experiment_dir.mkdir(parents=True, exist_ok=True)
 
     return experiment_dir
-
 
 """
 reference: https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
@@ -133,7 +130,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
             'accuracy',
             tf.keras.metrics.Precision(name='precision'),
             tf.keras.metrics.Recall(name='recall')
-        ]
+        ] #for pneumonia dataset, we fix the metrics (precision and recall) in clients, metrics settings here is only used in server
         initial_lr = 1e-4
         x_chest = True
     
@@ -177,6 +174,7 @@ class Threat_model:
                        f'_b_{self.type}_'
                        f'{int(self.real_alpha * 100) if self.real_alpha is not None else "f" + str(self.f)}_'
                        f'{self.num_samples_per_attacker}')
+
 def make_method_list(method_list=None, t_mean_beta=0.1,gam_max=10, gamma=0.1,geo_max=1000, tol = 1e-7,):
     if method_list is None:
         method_list = 'all'
@@ -206,7 +204,7 @@ def make_method_list(method_list=None, t_mean_beta=0.1,gam_max=10, gamma=0.1,geo
     geo_mean.__name__ = 'geometric_median'
 
     if method_list == 'all':
-        weight_delta_aggregators = [mean, median, r_gam_mean_s, r_gam_mean, gam_mean_s, gam_mean, geo_mean, t_mean]
+        weight_delta_aggregators = [gam_mean_s, gam_mean_s_median, gam_mean, gam_mean_median, mean, median, r_gam_mean_s, r_gam_mean, geo_mean, t_mean]
     else:
         weight_delta_aggregators = list()
         for method in method_list:

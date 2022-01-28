@@ -19,148 +19,148 @@ we use some useful function refer from their code (but change quite a lot) and a
 
 if __name__ == '__main__':
     clients=20
-    model = mlp_model_factory
-    input_shape = [-1]
     partition_config={'#clients': clients, 'mu': 1.5, 'sigma': 3.45, 'min_value': 0}
-    experiment_runner.run_all('expr_MNIST_mlp_no_attacks',
-                              model, input_shape=input_shape, dataset='mnist',
-                              seed=seed, cpr='all', rounds=1000, real_alpha=0, partition_config=partition_config,
-                              t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
+    # model = mlp_model_factory
+    # input_shape = [-1]
+    # experiment_runner.run_all('expr_MNIST_mlp_no_attacks',
+    #                           model, input_shape=input_shape, dataset='mnist',
+    #                           seed=seed, cpr='all', rounds=1000, real_alpha=0, partition_config=partition_config,
+    #                           t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
-    experiment_runner.run_all('expr_MNIST_mlp_random',
-                              model, input_shape=input_shape, dataset='mnist', 
-                              seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
-                              num_samples_per_attacker=1_000_000, 
-                              attack_type='random', t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
+    # experiment_runner.run_all('expr_MNIST_mlp_random',
+    #                           model, input_shape=input_shape, dataset='mnist', 
+    #                           seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
+    #                           num_samples_per_attacker=1_000_000, 
+    #                           attack_type='random', t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
-    model = cnn_model_factory
-    input_shape=[28,28,1]
-    experiment_runner.run_all('expr_MNIST_cnn_no_attacks',
-                              model_factory = model, input_shape=input_shape, dataset='mnist',
-                              seed=seed, cpr='all', rounds=1000, real_alpha=0,  partition_config=partition_config,
-                              t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
+    # model = cnn_model_factory
+    # input_shape=[28,28,1]
+    # experiment_runner.run_all('expr_MNIST_cnn_no_attacks',
+    #                           model_factory = model, input_shape=input_shape, dataset='mnist',
+    #                           seed=seed, cpr='all', rounds=1000, real_alpha=0,  partition_config=partition_config,
+    #                           t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
-    experiment_runner.run_all('expr_MNIST_cnn_random', 
-                              model_factory = model, input_shape=input_shape, dataset='mnist',
-                              seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
-                              num_samples_per_attacker=1_000_000, 
-                              attack_type='random', t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
+    # experiment_runner.run_all('expr_MNIST_cnn_random', 
+    #                           model_factory = model, input_shape=input_shape, dataset='mnist',
+    #                           seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
+    #                           num_samples_per_attacker=1_000_000, 
+    #                           attack_type='random', t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
-    experiment_runner.run_all('expr_fashion_cnn_no_attacks',
-                              model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
-                              seed=seed, cpr='all', rounds=1000, real_alpha=0,  partition_config=partition_config,
-                              t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
+    # experiment_runner.run_all('expr_fashion_cnn_no_attacks',
+    #                           model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
+    #                           seed=seed, cpr='all', rounds=1000, real_alpha=0,  partition_config=partition_config,
+    #                           t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
-    experiment_runner.run_all('expr_fashion_cnn_random', 
-                              model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
-                              seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
-                              num_samples_per_attacker=1_000_000, 
-                              attack_type='random', t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
+    # experiment_runner.run_all('expr_fashion_cnn_random', 
+    #                           model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
+    #                           seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
+    #                           num_samples_per_attacker=1_000_000, 
+    #                           attack_type='random', t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
     
     model = LeNet_model_factory
     input_shape=[28,28,1]
-    experiment_runner.run_all('expr_MNIST_LeNet_no_attacks',
-                              model_factory = model, input_shape=input_shape, dataset='mnist',
-                              seed=seed, cpr='all', rounds=1000, real_alpha=0,  partition_config=partition_config,
-                              t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
-
     experiment_runner.run_all('expr_MNIST_LeNet_random', 
                               model_factory = model, input_shape=input_shape, dataset='mnist',
                               seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
                               num_samples_per_attacker=1_000_000, 
                               attack_type='random', t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
-
-    experiment_runner.run_all('expr_fashion_LeNet_no_attacks',
-                              model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
+    
+    experiment_runner.run_all('expr_MNIST_LeNet_no_attacks',
+                              model_factory = model, input_shape=input_shape, dataset='mnist',
                               seed=seed, cpr='all', rounds=1000, real_alpha=0,  partition_config=partition_config,
                               t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
-
+    
     experiment_runner.run_all('expr_fashion_LeNet_random', 
                               model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
                               seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
                               num_samples_per_attacker=1_000_000, 
                               attack_type='random', t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
-
-    model = mlp_model_factory
-    input_shape = [-1]
-    experiment_runner.run_all('expr_fashion_mlp_no_attacks',
-                              model, input_shape=input_shape, dataset='fashion_mnist',
-                              seed=seed, cpr='all', rounds=1000, real_alpha=0, partition_config=partition_config,
+    
+    experiment_runner.run_all('expr_fashion_LeNet_no_attacks',
+                              model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0,  partition_config=partition_config,
                               t_mean_beta=0.1, clients=clients,
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
 
-    experiment_runner.run_all('expr_fashion_mlp_random',
-                              model, input_shape=input_shape, dataset='fashion_mnist', 
-                              seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
-                              num_samples_per_attacker=1_000_000, 
-                              attack_type='random', t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
+    # model = mlp_model_factory
+    # input_shape = [-1]
+    # experiment_runner.run_all('expr_fashion_mlp_no_attacks',
+    #                           model, input_shape=input_shape, dataset='fashion_mnist',
+    #                           seed=seed, cpr='all', rounds=1000, real_alpha=0, partition_config=partition_config,
+    #                           t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
+
+    # experiment_runner.run_all('expr_fashion_mlp_random',
+    #                           model, input_shape=input_shape, dataset='fashion_mnist', 
+    #                           seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
+    #                           num_samples_per_attacker=1_000_000, 
+    #                           attack_type='random', t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
     
-    method_list = ['mean', 'median', 'gam_mean_s', 'gam_mean', 'geo_mean']
-    res_model_factory = res_model(pooling = None)
-    clients = 3
-    partition_config={'#clients': clients, 'mu': 1.5, 'sigma': 3.45, 'min_value': 512} #seed 1: [519, 512, 4185]
+    # res_model_factory = res_model(pooling = None)
+    # method_list = ['mean', 'median', 'gam_mean_s', 'gam_mean', 'geo_mean']
+    # clients = 3
+    # partition_config={'#clients': clients, 'mu': 1.5, 'sigma': 3.45, 'min_value': 512} #seed 1: [519, 512, 4185]
     
-    model = res_model_factory
-    input_shape = [150,150,3]
-    initialize = None
-    experiment_runner.run_all('expr_pneumonia_resnet_3client',
-                              model, input_shape=input_shape, dataset='pneumonia',
-                              seed=seed, cpr='all', rounds=100, real_alpha=0, partition_config=partition_config,
-                              epochs=20, method_list = method_list, t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
+    # model = res_model_factory
+    # input_shape = [150,150,3]
+    # initialize = None
+    # experiment_runner.run_all('expr_pneumonia_resnet_3client',
+    #                           model, input_shape=input_shape, dataset='pneumonia',
+    #                           seed=seed, cpr='all', rounds=100, real_alpha=0, partition_config=partition_config,
+    #                           epochs=20, method_list = method_list, t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
     
-    clients = 5
-    partition_config={'#clients': clients, 'mu': 1.5, 'sigma': 3.45, 'min_value': 512} #seed 1: [512, 512, 3147, 512, 533]
+    # clients = 5
+    # partition_config={'#clients': clients, 'mu': 1.5, 'sigma': 3.45, 'min_value': 512} #seed 1: [512, 512, 3147, 512, 533]
     
-    model = res_model_factory
-    input_shape = [150,150,3]
-    initialize = None
-    experiment_runner.run_all('expr_pneumonia_resnet_5client_no_attack',
-                              model, input_shape=input_shape, dataset='pneumonia',
-                              seed=seed, cpr='all', rounds=100, real_alpha=0, partition_config=partition_config,
-                              epochs=20, method_list = method_list, t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
+    # model = res_model_factory
+    # input_shape = [150,150,3]
+    # initialize = None
+    # experiment_runner.run_all('expr_pneumonia_resnet_5client_no_attack',
+    #                           model, input_shape=input_shape, dataset='pneumonia',
+    #                           seed=seed, cpr='all', rounds=100, real_alpha=0, partition_config=partition_config,
+    #                           epochs=20, method_list = method_list, t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
     
-    method_list = ['median', 'gam_mean_s', 'gam_mean']
-    experiment_runner.run_all('expr_pneumonia_resnet_5client_random',
-                              model, input_shape=input_shape, dataset='pneumonia',
-                              seed=seed, cpr='all', rounds=100, real_alpha=0.2, partition_config=partition_config,
-                              epochs=20, method_list = method_list, t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
+    # method_list = ['median', 'gam_mean_s', 'gam_mean']
+    # experiment_runner.run_all('expr_pneumonia_resnet_5client_random',
+    #                           model, input_shape=input_shape, dataset='pneumonia',
+    #                           seed=seed, cpr='all', rounds=100, real_alpha=0.2, partition_config=partition_config,
+    #                           epochs=20, method_list = method_list, t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
     
-    method_list = ['mean', 'median', 'gam_mean_s', 'gam_mean', 'geo_mean']
-    clients = 9
-    partition_config={'#clients': clients, 'mu': 1.5, 'sigma': 3.45, 'min_value': 512} #seed 1: []
+    # method_list = ['mean', 'median', 'gam_mean_s', 'gam_mean', 'geo_mean']
+    # clients = 9
+    # partition_config={'#clients': clients, 'mu': 1.5, 'sigma': 3.45, 'min_value': 512} #seed 1: []
     
-    model = res_model_factory
-    input_shape = [150,150,3]
-    initialize = None
-    experiment_runner.run_all('expr_pneumonia_resnet_9client_no_attack',
-                              model, input_shape=input_shape, dataset='pneumonia',
-                              seed=seed, cpr='all', rounds=100, real_alpha=0, partition_config=partition_config,
-                              epochs=20, method_list = method_list, t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
+    # model = res_model_factory
+    # input_shape = [150,150,3]
+    # initialize = None
+    # experiment_runner.run_all('expr_pneumonia_resnet_9client_no_attack',
+    #                           model, input_shape=input_shape, dataset='pneumonia',
+    #                           seed=seed, cpr='all', rounds=100, real_alpha=0, partition_config=partition_config,
+    #                           epochs=20, method_list = method_list, t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
     
-    method_list = ['median', 'gam_mean_s', 'gam_mean']
-    experiment_runner.run_all('expr_pneumonia_resnet_9client_random',
-                              model, input_shape=input_shape, dataset='pneumonia',
-                              seed=seed, cpr='all', rounds=100, real_alpha=0.2, partition_config=partition_config,
-                              epochs=20, method_list = method_list, t_mean_beta=0.1, clients=clients,
-                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
+    # method_list = ['median', 'gam_mean_s', 'gam_mean']
+    # experiment_runner.run_all('expr_pneumonia_resnet_9client_random',
+    #                           model, input_shape=input_shape, dataset='pneumonia',
+    #                           seed=seed, cpr='all', rounds=100, real_alpha=0.2, partition_config=partition_config,
+    #                           epochs=20, method_list = method_list, t_mean_beta=0.1, clients=clients,
+    #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7, initialize = initialize)
     
-    method_list = ['mean', 'median', 'gam_mean_s', 'gam_mean', 'geo_mean']
     res_model_factory = res_model(pooling = 'avg')
+    method_list = ['mean', 'median', 'gam_mean_s', 'gam_mean', 'geo_mean']
     clients = 3
     partition_config={'#clients': clients, 'mu': 1.5, 'sigma': 3.45, 'min_value': 512} #seed 1: [519, 512, 4185]
     

@@ -37,7 +37,7 @@ def LeNet_model_factory():
         keras.layers.MaxPool2D(pool_size=2, strides = 2, padding='same'),
         keras.layers.Flatten(),
         keras.layers.Dense(500, activation='relu'),
-        keras.layers.Dropout(0.25),
+        #keras.layers.Dropout(0.25),
         keras.layers.Dense(10, activation='softmax')
         ])
 #seems not better
