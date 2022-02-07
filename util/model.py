@@ -40,6 +40,22 @@ def LeNet_model_factory():
         #keras.layers.Dropout(0.25),
         keras.layers.Dense(10, activation='softmax')
         ])
+
+def LeNet5_model_factory():
+    return keras.models.Sequential([
+        keras.layers.Conv2D(filters=6, kernel_size=5, 
+                            input_shape=(28, 28, 1), 
+                            activation='relu'),
+        keras.layers.MaxPool2D(pool_size=2, strides = 2),
+        keras.layers.Conv2D(filters=16, kernel_size=5, 
+                            activation='relu'),
+        keras.layers.MaxPool2D(pool_size=2, strides = 2),
+        keras.layers.Flatten(),
+        keras.layers.Dense(120, activation='relu'),
+        keras.layers.Dense(84, activation='relu'),
+        #keras.layers.Dropout(0.25),
+        keras.layers.Dense(10, activation='softmax')
+        ])
 #seems not better
 ###################################
 #####          usage          #####

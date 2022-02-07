@@ -34,7 +34,7 @@ class Server:
     if initialize is not None:
       self.model = initialize(self.model)
 
-  def train(self, clients, val_x, val_y, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
+  def train(self, clients, val_x, val_y, test_x, test_y, start_round, num_of_rounds, expr_basename, clip: bool, history, history_delta_sum,
             x_chest: bool, optimizer, loss_fn, metrics, initial_lr, experiment_dir, 
             #last_deltas,
             progress_callback):
@@ -135,22 +135,26 @@ class Server:
       old_server_weights = server_weights
       #@TODO: Only need to update trainable parameters
       if 'record_gamma_mean_' in self._weight_delta_aggregator.__name__:
-        #server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])
-        #                for i, w in enumerate(server_weights)]
-        server_weights = [w + clip_value(self._weight_delta_aggregator([d[i] for d in deltas], history_points = [np.divide(h[i], r + 1) for h in history_delta_sum]), lr_decayed)
-                        for i, w in enumerate(server_weights)]
-        #server_weights = [w + np.multiply(lr_decayed, clip_value(self._weight_delta_aggregator([d[i] for d in deltas], history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])))
-        #                for i, w in enumerate(server_weights)]
+        if clip:
+            server_weights = [w + clip_value(self._weight_delta_aggregator([d[i] for d in deltas], history_points = [np.divide(h[i], r + 1) for h in history_delta_sum]), lr_decayed)
+                            for i, w in enumerate(server_weights)]
+            #server_weights = [w + np.multiply(lr_decayed, clip_value(self._weight_delta_aggregator([d[i] for d in deltas], history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])))
+            #                for i, w in enumerate(server_weights)]
+        else:
+            server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas], history_points = [np.divide(h[i], r + 1) for h in history_delta_sum])
+                            for i, w in enumerate(server_weights)]
       else:
         # todo change code below (to be nicer?):
         # aggregated_deltas = [self._weight_delta_aggregator(_, importance_weights) for _ in zip(*deltas)]
         # server_weights = [w + d for w, d in zip(server_weights, aggregated_deltas)]
-        #server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas])
-        #                  for i, w in enumerate(server_weights)]
-        server_weights = [w + clip_value(self._weight_delta_aggregator([d[i] for d in deltas]), lr_decayed)
-                          for i, w in enumerate(server_weights)]
-        #server_weights = [w + np.multiply(lr_decayed, clip_value(self._weight_delta_aggregator([d[i] for d in deltas])))
-        #                  for i, w in enumerate(server_weights)]
+        if clip:
+            server_weights = [w + clip_value(self._weight_delta_aggregator([d[i] for d in deltas]), lr_decayed)
+                              for i, w in enumerate(server_weights)]
+            #server_weights = [w + np.multiply(lr_decayed, clip_value(self._weight_delta_aggregator([d[i] for d in deltas])))
+            #                  for i, w in enumerate(server_weights)]
+        else:
+            server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas])
+                              for i, w in enumerate(server_weights)]
       self.model.set_weights(server_weights)
       if x_chest:
         loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0, batch_size = 16)

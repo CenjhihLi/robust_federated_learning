@@ -94,6 +94,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     tf.random.set_seed(seed)
     random.seed(seed)
     x_chest = False
+    clip = False
     val_x, val_y = None, None
     if dataset == "emnist":
         """
@@ -106,18 +107,21 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
         metrics = ['accuracy',]
         initial_lr = 5e-2
+        clip = True
     elif dataset == "mnist":
         train_data, (test_x, test_y) = mnist.load(partition_config, input_shape) 
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
         metrics = ['accuracy',]
         initial_lr = 1e-1
+        clip = True
     elif dataset == "fashion_mnist":
         train_data, (test_x, test_y) = fashion_mnist.load(partition_config, input_shape)
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
         metrics = ['accuracy',]
-        initial_lr = 5e-2
+        initial_lr = 5e-1
+        clip = True
     elif dataset == "pneumonia":
         """
         Use pneumonia dataset provided by:
@@ -149,7 +153,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
     del train_data, threat_model
     gc.collect()
 
-    server.train(clients, val_x, val_y, test_x, test_y, start_round, num_of_rounds, expr_basename, history, history_delta_sum,
+    server.train(clients, val_x, val_y, test_x, test_y, start_round, num_of_rounds, expr_basename, clip, history, history_delta_sum,
                  x_chest, optimizer, loss_fn, metrics, initial_lr, experiment_dir,
                  lambda history, server_weights, history_delta_sum: np.savez(expr_file, history=history, 
                     server_weights=server_weights, history_delta_sum=history_delta_sum))

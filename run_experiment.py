@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 import random
 import os
-from util.model import mlp_model_factory, cnn_model_factory, LeNet_model_factory, res_model, CNN_model_xray, CNN_model_xray_initialize
+from util.model import mlp_model_factory, cnn_model_factory, LeNet_model_factory, LeNet5_model_factory, res_model, CNN_model_xray, CNN_model_xray_initialize
 os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3,4,5,6,7"
 seed=1
 np.random.seed(seed)
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     #                           attack_type='random', t_mean_beta=0.1, clients=clients,
     #                           gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
     
-    model = LeNet_model_factory
+    model = LeNet_model_factory #simplified, only 1 FC layer
     input_shape=[28,28,1]
     experiment_runner.run_all('expr_MNIST_LeNet_random', 
                               model_factory = model, input_shape=input_shape, dataset='mnist',
@@ -86,6 +86,21 @@ if __name__ == '__main__':
                               gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
     
     experiment_runner.run_all('expr_fashion_LeNet_no_attacks',
+                              model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0,  partition_config=partition_config,
+                              t_mean_beta=0.1, clients=clients,
+                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
+    
+    model = LeNet5_model_factory
+    input_shape=[28,28,1]
+    experiment_runner.run_all('expr_fashion_LeNet5_random', 
+                              model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
+                              seed=seed, cpr='all', rounds=1000, real_alpha=0.1, partition_config=partition_config,
+                              num_samples_per_attacker=1_000_000, 
+                              attack_type='random', t_mean_beta=0.1, clients=clients,
+                              gam_max=10, gamma=0.5, geo_max=1000, tol = 1e-7)
+    
+    experiment_runner.run_all('expr_fashion_LeNet5_no_attacks',
                               model_factory = model, input_shape=input_shape, dataset='fashion_mnist',
                               seed=seed, cpr='all', rounds=1000, real_alpha=0,  partition_config=partition_config,
                               t_mean_beta=0.1, clients=clients,

@@ -27,4 +27,6 @@ test_seed.py
 test.py
 print_test.py
 # Xchest_test.ipynb
+MNIST.ipynb
 test.ipynb
+nohup.out
