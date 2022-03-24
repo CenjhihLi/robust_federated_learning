@@ -9,7 +9,8 @@ prepare_data/RSNA_Pneumonia_Detection_Challenge/
 __pycache__/
 # Ignoring file
 # release after publish paper
-aggregators.py 
+# aggregators.py 
+#aggregators_without_our_gamma_mean.py
 nvflare_demo-main.zip
 # results and test file
 scenario1_alpha_0.png
@@ -29,4 +30,5 @@ print_test.py
 # Xchest_test.ipynb
 MNIST.ipynb
 test.ipynb
+mnist_results_plots_old_version.ipynb
 nohup.out

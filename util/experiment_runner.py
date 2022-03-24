@@ -12,10 +12,6 @@ import numpy as np
 import tensorflow as tf
 
 from util.aggregators import mean, median, trimmed_mean, gamma_mean, geometric_median
-import prepare_data.emnist as emnist
-import prepare_data.mnist as mnist
-import prepare_data.fashion_mnist as fashion_mnist
-import prepare_data.pneumonia as pneumonia
 from util.client import Client
 from util.server import Server
 
@@ -101,6 +97,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         Use emnist dataset provided by tff:
         https://www.tensorflow.org/federated/api_docs/python/tff/simulation/datasets/emnist/load_data?hl=zh-tw
         """
+        import prepare_data.emnist as emnist
         train_data, test_x, test_y  = emnist.load(client = partition_config['#clients'],
                                                   reshape = input_shape)
         optimizer = tf.keras.optimizers.SGD
@@ -109,6 +106,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         initial_lr = 5e-2
         clip = True
     elif dataset == "mnist":
+        import prepare_data.mnist as mnist
         train_data, (test_x, test_y) = mnist.load(partition_config, input_shape) 
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
@@ -116,6 +114,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         initial_lr = 1e-1
         clip = True
     elif dataset == "fashion_mnist":
+        import prepare_data.fashion_mnist as fashion_mnist
         train_data, (test_x, test_y) = fashion_mnist.load(partition_config, input_shape)
         optimizer = tf.keras.optimizers.SGD
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy()
@@ -127,6 +126,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         Use pneumonia dataset provided by:
         https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia
         """
+        import prepare_data.pneumonia as pneumonia
         train_data, (val_x, val_y), (test_x, test_y) = pneumonia.load(partition_config, input_shape, self_split_val = self_split_val)
         optimizer = tf.keras.optimizers.Adam
         loss_fn = tf.keras.losses.BinaryCrossentropy(from_logits=True)

@@ -38,14 +38,11 @@ class Server:
             x_chest: bool, optimizer, loss_fn, metrics, initial_lr, experiment_dir, 
             #last_deltas,
             progress_callback):
-    if start_round>1:
-      old_loss = history[-1][0]
     self.model.compile(
         loss = loss_fn,
         metrics = metrics
     )
 
-    loss_descent = True
     server_weights = self.model.get_weights()
 
     for r in range(start_round, num_of_rounds):
@@ -57,11 +54,8 @@ class Server:
         cosine_decay = 0.5 * (1 + np.cos( np.pi * step / decay_steps))
         decayed = (1 - alpha) * cosine_decay + alpha
         return initial_learning_rate * decayed
-    
-      if loss_descent or r<np.maximum(num_of_rounds*0.5, 50 if x_chest else 500):
-        lr_decayed = cosine_decayed_learning_rate ( initial_learning_rate = initial_lr, step = r + 1)
-      else:
-        lr_decayed = 0.9*lr_decayed
+      
+      lr_decayed = cosine_decayed_learning_rate ( initial_learning_rate = initial_lr, step = r + 1)
         
       def Adam(lm, lv, d, lr_decayed, beta_1 = 0.9, beta_2 = 0.999, epsilon = 1e-7):
         g = np.multiply( lr_decayed, d) #since the delta return from clients including lr_decayed factor
@@ -132,7 +126,8 @@ class Server:
         server_weights[i] = w + aggr_delta
       last_deltas = [last_m, last_v]
       """
-      old_server_weights = server_weights
+      #old_server_weights = server_weights
+    
       #@TODO: Only need to update trainable parameters
       if 'record_gamma_mean_' in self._weight_delta_aggregator.__name__:
         if clip:
@@ -156,31 +151,17 @@ class Server:
             server_weights = [w + self._weight_delta_aggregator([d[i] for d in deltas])
                               for i, w in enumerate(server_weights)]
       self.model.set_weights(server_weights)
+      
       if x_chest:
         loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0, batch_size = 16)
-        #loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0)
-      else:
-        loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
-      loss_detect = 1 if x_chest else np.maximum(num_of_rounds*0.5, 500)
-      if r>=loss_detect:
-        if loss > old_loss: #need to find some way to avoid going into local minimum
-          self.model.set_weights(old_server_weights)
-          server_weights = old_server_weights
-          if x_chest:
-            loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0, batch_size = 16)
-            #loss, acc, precision, recall = self.model.evaluate(test_x, test_y, verbose=0)
-            #@TODO: unpack means we have to know the metrics first, look for a more flexible way
-          else:
-            loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
-          loss_descent=False
-        else:
-          loss_descent=True
-      old_loss = loss
-      if x_chest:
         print(f'{expr_basename} loss: {loss} - accuracy: {acc:.4%} - precision: {precision:.4%} - recall: {recall:.4%}')
       else:
+        loss, acc = self.model.evaluate(test_x, test_y, verbose=0)
         print(f'{expr_basename} loss: {loss} - accuracy: {acc:.4%}')
+        
+      #history.append((loss, acc, val_loss, val_acc))
       history.append((loss, acc))
+        
       if (r + 1) % (1 if x_chest else 10) == 0:
         progress_callback(history, server_weights, history_delta_sum)#, last_deltas)
       gc.collect()

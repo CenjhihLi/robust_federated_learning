@@ -13,4 +13,4 @@ pip install wquantiles==0.6 nest_asyncio tensorflow-federated==0.17.0 imgaug mlx
 
 sudo docker run -it --rm -p 8897:8888 -v ./robust_federated_learning/:/mount/src -w /mount/src --gpus '"device=0,1,2,3,4,5,6,7"' nvcr.io/nvidia/tensorflow:21.09-tf2-py3
 python -m pip install -U setuptools pip
-pip install matplotlib~=3.4.0 wquantiles==0.6 nest_asyncio tensorflow-federated imgaug opencv-python-headless pandas mlxtend
+pip install matplotlib~=3.4.0 wquantiles==0.6 nest_asyncio tensorflow-federated==0.19 imgaug pandas mlxtend opencv-python-headless

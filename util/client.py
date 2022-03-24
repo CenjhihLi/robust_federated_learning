@@ -51,7 +51,7 @@ class Client():
         weights = layer.get_weights()
         for weight in weights:
           if layer.trainable:
-            return_deltas.append( np.random.normal(size = weight.shape) )
+            return_deltas.append( np.random.normal(loc=5.0, scale=1.0, size = weight.shape) )
           else: 
             return_deltas.append( np.zeros(shape = weight.shape, dtype = np.float32) )
       return return_deltas
@@ -62,11 +62,11 @@ class Client():
         #optimizer = tf.keras.optimizers.Adam( learning_rate = lr_decayed ), 
         optimizer = optimizer( learning_rate = lr_decayed, decay = 1e-5),
         loss = loss_fn,
-        #metrics = metrics,
-        metrics = [
-            tf.keras.metrics.Precision(name='precision'),
-            tf.keras.metrics.Recall(name='recall')
-        ],
+        metrics = metrics,
+        #metrics = [
+        #    tf.keras.metrics.Precision(name='precision'),
+        #    tf.keras.metrics.Recall(name='recall')
+        #],
       )
       #datagen = ImageDataGenerator(
       #  rescale=1./255,
