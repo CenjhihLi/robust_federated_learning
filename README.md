@@ -1,17 +1,16 @@
-# A robust federated learning (robust optimization)
+# A robust federated learning
 Some experiment code refer from https://github.com/amitport/Towards-Federated-Learning-with-Byzantine-Robust-Client-Weighting
 
-The server aggregator is numpy code, which compute by cpu, and we find that the computation seems large.
+The server aggregator is `numpy` code, which computes by cpu, and we find that the computation seems large.
 However, cupy and tf.tensor is not as convinient as numpy. 
 
 The aggregator can be easily applied to Nvidia's NVFlare and Clara train which are developed for real federated learning system.
 
 Author: Cen-Jhih Li  
 Belongs: Academia Sinica, Institute of Statistical Science, Robust federated learning project
-# Dataset: 
+# Datasets: 
 
 Including emnist, mnist, fashion_MNIST, chest xray data. 
-
 # Build environment
 see `build_env.txt`
 
