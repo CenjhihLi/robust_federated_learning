@@ -12,7 +12,7 @@ Belongs: Academia Sinica, Institute of Statistical Science, Robust federated lea
 
 Including emnist, mnist, fashion_MNIST, chest xray data. 
 
-# Build environment in anaconda
+# Build environment
 see `build_env.txt`
 
 Ubundo 16, 18, and 20 should all be fine
