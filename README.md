@@ -6,22 +6,21 @@ However, cupy and tf.tensor is not as convinient as numpy.
 
 The aggregator can be easily applied to Nvidia's NVFlare and Clara train which are developed for real federated learning system.
 
-Author: Cen-Jhih Li
+Author: Cen-Jhih Li  
 Belongs: Academia Sinica, Institute of Statistical Science, Robust federated learning project
 # Dataset: 
 
 Including emnist, mnist, fashion_MNIST, chest xray data. 
 
 # Build environment in anaconda
-see build_env.txt 
+see `build_env.txt`
 
 Ubundo 16, 18, and 20 should all be fine
 
-remove the EMNIST part in the code and do not need to install tensorflow-federated if not using EMNIST
+remove the EMNIST part in the code and no need to install tensorflow-federated if not using EMNIST
 # Training
 
-Using the command in cmd_run.txt to implement the experiments. 
-(with conda env cmds. If using docker, ignore the conda parts)
+Using the command in `cmd_run.txt` to implement the experiments. 
 # Python scripts
 
 main script (run experiments): `run_experiment.py`
