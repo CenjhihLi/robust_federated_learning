@@ -8,9 +8,6 @@ prepare_data/RSNA_Pneumonia_Detection_Challenge/
 .ipynb_checkpoints/
 __pycache__/
 # Ignoring file
-# release after publish paper
-# aggregators.py 
-#aggregators_without_our_gamma_mean.py
 nvflare_demo-main.zip
 # results and test file
 scenario1_alpha_0.png

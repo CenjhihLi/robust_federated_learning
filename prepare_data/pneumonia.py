@@ -12,6 +12,7 @@ from prepare_data.partition_v2 import Partition, PartitionParams
 """
 Use pneumonia dataset provided by:
 https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia
+not upload to github
 """
 #datagen = ImageDataGenerator(rescale=1./255)
 #train_generator = datagen.flow_from_directory(

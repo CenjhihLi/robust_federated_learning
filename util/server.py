@@ -126,7 +126,6 @@ class Server:
         server_weights[i] = w + aggr_delta
       last_deltas = [last_m, last_v]
       """
-      #old_server_weights = server_weights
     
       #@TODO: Only need to update trainable parameters
       if 'record_gamma_mean_' in self._weight_delta_aggregator.__name__:

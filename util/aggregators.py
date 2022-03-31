@@ -145,6 +145,7 @@ def ext_remove(points, weights=None, beta=0.1):
     """
     keep the data from quantile beta to quantile 1-beta
     compare np.linalg.norm(p) in points
+    not use in our study
     """
     if beta<=0:
         print("beta<=0 means to keep all points")
@@ -200,6 +201,7 @@ def gamma_mean_1D(points, weights=None, history_points=None, gamma = 0.1, max_it
     if remove:
         """
         remove the extreme points
+        not use in our study
         """
         points, weights = ext_remove(points, weights, beta=beta)
     #the similar entries do not need to update
@@ -258,6 +260,7 @@ def simple_gamma_mean(points, weights=None, history_points=None, gamma = 0.1, ma
     if remove:
         """
         remove the extreme points
+        not use in our study
         """
         points, weights = ext_remove(points, weights, beta=beta)
     #the similar entries do not need to update
@@ -322,7 +325,8 @@ def dim_reduce(points, weights=None, method='pca', dim = None):
 
 def gamma_mean_2D(points, weights=None, history_points=None, gamma = 0.1, max_iter=10, tol = 1e-7, dim_red=False, red_method='pca', initial = 'mean'):
     """
-    gamma_mean
+    gamma_mean multinormal
+    not use in our study
     """
     original_tol=tol
     shape = np.shape(points[0])

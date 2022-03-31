@@ -34,17 +34,6 @@ class Client():
     self.num_of_samples = self.threat_model.num_samples_per_attacker
 
   def train(self, server_weights, lr_decayed, optimizer, loss_fn, metrics, val_x, val_y, x_chest: bool, chkpt_path):   
-    if self.attacker and self.threat_model is not None and self.threat_model.type == 'delta_to_zero':
-      return_deltas = list()
-      for i, layer in enumerate(self._model.layers):
-        weights = layer.get_weights()
-        for weight in weights:
-          if layer.trainable:
-            return_deltas.append( -weight )
-          else: 
-            return_deltas.append( np.zeros(shape = weight.shape, dtype = np.float32) )
-      return return_deltas #not use
-      
     if self.attacker and self.threat_model is not None and self.threat_model.type == 'random':
       return_deltas = list()
       for _, layer in enumerate(self._model.layers):
@@ -101,7 +90,7 @@ class Client():
       )
       self._model.fit(self._x, self._y, verbose = 0,
                       epochs = self._epochs, steps_per_epoch = 1,
-                      # go over 10% of data like in Yin's paper
+                      # go over 10% of data
                       batch_size = max((self.num_of_samples // 10), 1), 
                       # epochs=3, batch_size=50,
                       #                         callbacks=[tf.keras.callbacks.EarlyStopping(

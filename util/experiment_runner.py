@@ -3,7 +3,7 @@ import json
 #import os
 import pathlib
 import random
-import collections
+#import collections
 import gc
 from dataclasses import dataclass, field
 from functools import partial
@@ -125,6 +125,7 @@ def run_experiment(experiment_name, seed, model_factory, input_shape, server_con
         """
         Use pneumonia dataset provided by:
         https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia
+        not upload to github
         """
         import prepare_data.pneumonia as pneumonia
         train_data, (val_x, val_y), (test_x, test_y) = pneumonia.load(partition_config, input_shape, self_split_val = self_split_val)

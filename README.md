@@ -28,6 +28,8 @@ server class (include server training procedure) defined in: `./util/server.py`
 client class (include client training procedure) defined in: `./util/client.py`
 neural network model defined in: `./util/model.py`
 datasets functions in folder: `./prepare_data/`
+(Pneumonia dataset provided by: https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia
+ not provide in this github project)
 
 # Results
 
