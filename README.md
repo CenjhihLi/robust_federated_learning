@@ -22,12 +22,12 @@ remove the EMNIST part in the code and no need to install tensorflow-federated i
 Using the command in `cmd_run.txt` to implement the experiments. 
 # Python scripts
 
-main script (run experiments): `run_experiment.py`
-experiment functions (include loading previous training results) are in: `./util/experiment_runner.py`
-server class (include server training procedure) defined in: `./util/server.py`
-client class (include client training procedure) defined in: `./util/client.py`
-neural network model defined in: `./util/model.py`
-datasets functions in folder: `./prepare_data/`
+main script (run experiments): `run_experiment.py`  
+experiment functions (include loading previous training results) are in: `./util/experiment_runner.py`  
+server class (include server training procedure) defined in: `./util/server.py`  
+client class (include client training procedure) defined in: `./util/client.py`  
+neural network model defined in: `./util/model.py`  
+datasets functions in folder: `./prepare_data/`  
 (Pneumonia dataset provided by: https://www.kaggle.com/paultimothymooney/chest-xray-pneumonia
  not provide in this github project)
 
