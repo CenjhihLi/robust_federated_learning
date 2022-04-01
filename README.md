@@ -5,7 +5,8 @@ The server aggregator is `numpy` code, which computes by cpu, and we find that t
 However, cupy and tf.tensor is not as convinient as numpy. 
 
 The aggregator can be easily applied to Nvidia's NVFlare and Clara train which are developed for real federated learning system.
-
+  
+Preprint article: please see the file `preprint_paper.pdf`.  
 Author: Cen-Jhih Li  
 Belongs: Academia Sinica, Institute of Statistical Science, Robust federated learning project
 # Datasets: 
@@ -34,5 +35,4 @@ datasets functions in folder: `./prepare_data/`
 # Results
 
 After the experiments are done, execute `mnist_results_plots.ipynb` using Jupyter notebook.  
-Our simulation and experiments results are in `aggregators_simulation.ipynb` and `mnist_results_plots.ipynb`.  
-Preprint article: please see `preprint_paper.pdf`.  
+Our simulation and experiments results are in `aggregators_simulation.ipynb` and `mnist_results_plots.ipynb`.   
