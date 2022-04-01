@@ -33,6 +33,6 @@ datasets functions in folder: `./prepare_data/`
 
 # Results
 
-After the experiments are done, execute `mnist_results_plots.ipynb` using Jupyter notebook.
-Our simulation and experiments results are in `aggregators_simulation.ipynb` and `mnist_results_plots.ipynb` 
+After the experiments are done, execute `mnist_results_plots.ipynb` using Jupyter notebook.  
+Our simulation and experiments results are in `aggregators_simulation.ipynb` and `mnist_results_plots.ipynb`  
 Preprint article: please see `preprint_paper.pdf`.  
