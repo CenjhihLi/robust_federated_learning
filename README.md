@@ -6,7 +6,7 @@ However, cupy and tf.tensor is not as convinient as numpy.
 
 The aggregator can be easily applied to Nvidia's NVFlare and Clara train which are developed for real federated learning system.
   
-Preprint article: please see the file `preprint_paper.pdf`.  
+Preprint article: please see the file `paper_entropy.pdf`.  
 Author: Cen-Jhih Li  
 Belongs: Academia Sinica, Institute of Statistical Science, Robust federated learning project
 # Datasets: 

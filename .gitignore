@@ -28,4 +28,7 @@ print_test.py
 MNIST.ipynb
 test.ipynb
 mnist_results_plots_old_version.ipynb
+VRMOM_paper_simulation.ipynb
+output.csv
+output.xlsx
 nohup.out
